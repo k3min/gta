@@ -1,0 +1,13 @@
+/.idea
+
+!/[Aa]ssets/**/*.meta
+
+/[Ll]ibrary
+/[Tt]emp
+/[Oo]bj
+/[Ll]ogs
+/[Aa]ssets/Plugins/Editor/JetBrains*
+
+/*.user
+/*.sln
+/*.csproj
