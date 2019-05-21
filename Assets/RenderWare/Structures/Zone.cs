@@ -23,7 +23,7 @@ namespace RenderWare.Structures
 				Type = ar.ReadInt(),
 				Min = ar.ReadVector3(),
 				Max = ar.ReadVector3(),
-				Level = (ZoneType)ar.ReadInt()
+				Level = ar.ReadEnum<ZoneType>()
 			};
 		}
 	}

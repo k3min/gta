@@ -50,6 +50,7 @@ namespace RenderWare.Structures
 				throw new InvalidDataException();
 			}
 
+			// ReSharper disable once UseObjectOrCollectionInitializer
 			var coll = new CollisionModel
 			{
 				Magic = CollisionModel.COLL,

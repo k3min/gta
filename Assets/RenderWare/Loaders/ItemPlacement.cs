@@ -85,6 +85,9 @@ namespace RenderWare.Loaders
 						case IplSection.Pickups:
 							ItemPlacement.Add(Pickup.Read(lr));
 							break;
+						
+						default:
+							throw new System.NotSupportedException();
 					}
 				}
 			});

@@ -1,5 +1,5 @@
 using System.IO;
-using System.Text;
+using System.Runtime.InteropServices;
 using RenderWare.Structures;
 using RenderWare.Types;
 
@@ -91,6 +91,15 @@ namespace RenderWare.Loaders
 		public int ReadInt()
 		{
 			return this.ReadPacked(4);
+		}
+
+		public T ReadEnum<T>() where T : struct
+		{
+			var type = typeof(T);
+			var size = Marshal.SizeOf(System.Enum.GetUnderlyingType(type));
+			var value = this.ReadPacked(size).ToString();
+
+			return (T)System.Enum.Parse(type, value);
 		}
 
 		public int[] ReadInt(int count)

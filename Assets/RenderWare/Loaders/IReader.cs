@@ -6,6 +6,8 @@ namespace RenderWare.Loaders
 		
 		int ReadInt();
 
+		T ReadEnum<T>() where T : struct;
+
 		float ReadFloat();
 		
 		 UnityEngine.Vector2 ReadVector2();

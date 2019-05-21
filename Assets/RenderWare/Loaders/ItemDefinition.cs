@@ -109,6 +109,9 @@ namespace RenderWare.Loaders
 
 							break;
 						}
+						
+						default:
+							throw new System.NotSupportedException();
 					}
 				}
 			});

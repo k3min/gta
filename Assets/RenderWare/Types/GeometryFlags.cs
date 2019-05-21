@@ -3,7 +3,7 @@ namespace RenderWare.Types
 	[System.Flags]
 	public enum GeometryFlags
 	{
-		None=0,
+		None = 0,
 		IsTriangleStrip = 1 << 0,
 		HasTranslation = 1 << 1,
 		HasTexCoords = 1 << 2,

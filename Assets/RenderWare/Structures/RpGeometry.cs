@@ -45,7 +45,7 @@ namespace RenderWare.Structures
 		{
 			var geometry = new RpGeometry
 			{
-				Flags = (GeometryFlags)reader.ReadInt(),
+				Flags = reader.ReadEnum<GeometryFlags>(),
 				TriangleCount = reader.ReadInt(),
 				VertexCount = reader.ReadInt(),
 				MorphTargetCount = reader.ReadInt(),

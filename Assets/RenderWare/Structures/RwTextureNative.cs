@@ -169,9 +169,9 @@ namespace RenderWare.Structures
 			{
 				return new TextureFormat
 				{
-					PlatformId = (PlatformId)reader.ReadInt(),
-					FilterMode = (FilterMode)reader.ReadByte(),
-					Wrap = (AddressingMode)reader.ReadByte(),
+					PlatformId = reader.ReadEnum<PlatformId>(),
+					FilterMode = reader.ReadEnum<FilterMode>(),
+					Wrap = reader.ReadEnum<AddressingMode>(),
 					Padding = reader.ReadShort(),
 					Name = reader.ReadString(32),
 					AlphaName = reader.ReadString(32)
@@ -196,7 +196,7 @@ namespace RenderWare.Structures
 			{
 				return new RasterFormat
 				{
-					Flags = (Types.RasterFormat)reader.ReadInt(),
+					Flags = reader.ReadEnum<Types.RasterFormat>(),
 					HasAlpha = reader.ReadBoolean(),
 					Width = reader.ReadShort(),
 					Height = reader.ReadShort(),

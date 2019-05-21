@@ -40,6 +40,9 @@ namespace RenderWare.Loaders
 					case SectionType.Clump:
 						Model.Add(entry.Name, stream.Read(chunk, RwClump.Read));
 						break;
+					
+					default:
+						throw new System.NotSupportedException();
 				}
 			});
 

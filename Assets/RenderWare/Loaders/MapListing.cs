@@ -13,59 +13,30 @@ namespace RenderWare.Loaders
 				switch (lr.ReadString())
 				{
 					case Archive.Keyword:
-					{
-						var imgPath = lr.ReadString();
-
-						UnityEngine.Debug.LogWarningFormat("CDIMAGE: {0}", imgPath);
-
-						break;
-					}
+						throw new System.NotSupportedException($"{Archive.Keyword}: {lr.ReadString()}");
 
 					case ItemDefinition.Keyword:
-					{
-						var idePath = lr.ReadString();
-
-						ItemDefinition.Load(idePath);
-
+						ItemDefinition.Load(lr.ReadString());
 						break;
-					}
 
 					case TextureArchive.Keyword:
-					{
-						var txdPath = lr.ReadString();
-
-						TextureArchive.Load(txdPath);
-
+						TextureArchive.Load(lr.ReadString());
 						break;
-					}
 
 					case Model.Keyword:
-					{
-						var dffPath = lr.ReadString();
-
-						Model.Load(dffPath);
-
+						Model.Load(lr.ReadString());
 						break;
-					}
 
 					case Collision.Keyword:
-					{
-						var zone = (ZoneType)lr.ReadInt();
-						var colPath = lr.ReadString();
-
-						Collision.Load(zone, colPath);
-
+						Collision.Load(lr.ReadEnum<ZoneType>(), lr.ReadString());
 						break;
-					}
 
 					case ItemPlacement.Keyword:
-					{
-						var iplPath = lr.ReadString();
-
-						ItemPlacement.Load(iplPath);
-
+						ItemPlacement.Load(lr.ReadString());
 						break;
-					}
+
+					default:
+						throw new System.NotSupportedException();
 				}
 			});
 		}

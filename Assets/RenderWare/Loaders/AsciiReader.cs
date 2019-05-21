@@ -61,6 +61,14 @@ namespace RenderWare.Loaders
 			return int.Parse(this.ReadString());
 		}
 
+		public T ReadEnum<T>() where T : struct
+		{
+			var type = typeof(T);
+			var value = this.ReadString();
+			
+			return (T)System.Enum.Parse(type, value);
+		}
+
 		public bool ReadBoolean()
 		{
 			return (this.ReadInt() != 0);

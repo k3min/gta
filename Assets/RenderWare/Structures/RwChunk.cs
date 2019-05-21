@@ -24,7 +24,7 @@ namespace RenderWare.Structures
 
 			var chunk = new RwChunk
 			{
-				Type = (SectionType)reader.ReadInt(),
+				Type = reader.ReadEnum<SectionType>(),
 				Size = reader.ReadInt(),
 				Version = reader.ReadInt()
 			};

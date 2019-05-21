@@ -8,8 +8,9 @@ namespace RenderWare.Loaders
 	public static class TextureArchive
 	{
 		public const string Keyword = "TEXDICTION";
-		
-		private static readonly Dictionary<string, RwTextureDictionary> textures = new Dictionary<string, RwTextureDictionary>();
+
+		private static readonly Dictionary<string, RwTextureDictionary> textures =
+			new Dictionary<string, RwTextureDictionary>();
 
 		public static void Load(string filePath)
 		{
@@ -20,6 +21,9 @@ namespace RenderWare.Loaders
 					case SectionType.TextureDictionary:
 						TextureArchive.Add(filePath, stream.Read(chunk, RwTextureDictionary.Read));
 						break;
+
+					default:
+						throw new System.NotSupportedException();
 				}
 			});
 		}

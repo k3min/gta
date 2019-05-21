@@ -35,7 +35,7 @@ namespace RenderWare.Structures
 				info.DrawDistance[i] = lr.ReadFloat();
 			}
 
-			info.Flags = (ObjectFlags)lr.ReadInt();
+			info.Flags = lr.ReadEnum<ObjectFlags>();
 			info.TimeOn = 0;
 			info.TimeOff = 24;
 

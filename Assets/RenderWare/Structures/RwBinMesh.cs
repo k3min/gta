@@ -18,7 +18,7 @@ namespace RenderWare.Structures
 		{
 			var binMesh = new RwBinMesh
 			{
-				Type = (BinMeshType)reader.ReadInt(),
+				Type = reader.ReadEnum<BinMeshType>(),
 				MeshCount = reader.ReadInt(),
 				IndexCount = reader.ReadInt()
 			};
