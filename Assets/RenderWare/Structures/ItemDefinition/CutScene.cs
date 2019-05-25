@@ -4,8 +4,10 @@ using RenderWare.Loaders;
 namespace RenderWare.Structures
 {
 	[StructLayout(LayoutKind.Sequential)]
-	public struct CutSceneObject : IAscii, IItemDefinition
+	public struct CutScene : IAscii, IItemDefinition
 	{
+		public const string Keyword = "hier";
+
 		private int id;
 		private string modelName; 
 		private string textureName;
@@ -14,9 +16,9 @@ namespace RenderWare.Structures
 		public string ModelName => this.modelName;
 		public string TextureName => this.textureName;
 
-		public static CutSceneObject Read(AsciiReader lr)
+		public static CutScene Read(AsciiReader lr)
 		{
-			return new CutSceneObject
+			return new CutScene
 			{
 				id = lr.ReadInt(),
 				modelName = lr.ReadString(),

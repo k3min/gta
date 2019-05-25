@@ -24,23 +24,23 @@ namespace RenderWare.Loaders
 		{
 			switch (line.ToLower())
 			{
-				case "objs":
-					return IdeSection.Objects;
+				case SimpleObject.Keyword:
+					return IdeSection.SimpleObjects;
 
-				case "tobj":
+				case TimedObject.Keyword:
 					return IdeSection.TimedObjects;
 
-				case "hier":
-					return IdeSection.CutSceneObjects;
+				case CutScene.Keyword:
+					return IdeSection.CutScenes;
 
-				case "cars":
+				case Vehicle.Keyword:
 					return IdeSection.Vehicles;
 
-				case "peds":
+				case Pedestrian.Keyword:
 					return IdeSection.Pedestrians;
 
-				case "path":
-					return IdeSection.Paths;
+				case PathGroup.Keyword:
+					return IdeSection.PathGroups;
 				
 				default:
 					throw new System.IndexOutOfRangeException();
@@ -67,7 +67,7 @@ namespace RenderWare.Loaders
 
 					switch (section)
 					{
-						case IdeSection.Objects:
+						case IdeSection.SimpleObjects:
 							ItemDefinition.Add(SimpleObject.Read(lr));
 							break;
 						
@@ -75,19 +75,19 @@ namespace RenderWare.Loaders
 							ItemDefinition.Add(TimedObject.Read(lr));
 							break;
 
-						case IdeSection.CutSceneObjects:
-							ItemDefinition.Add(CutSceneObject.Read(lr));
+						case IdeSection.CutScenes:
+							ItemDefinition.Add(CutScene.Read(lr));
 							break;
 
 						case IdeSection.Vehicles:
-							ItemDefinition.Add(VehicleObject.Read(lr));
+							ItemDefinition.Add(Vehicle.Read(lr));
 							break;
 
 						case IdeSection.Pedestrians:
-							ItemDefinition.Add(PedestrianObject.Read(lr));
+							ItemDefinition.Add(Pedestrian.Read(lr));
 							break;
 
-						case IdeSection.Paths:
+						case IdeSection.PathGroups:
 						{
 							var group = PathGroup.Read(lr);
 
@@ -99,9 +99,9 @@ namespace RenderWare.Loaders
 								group.Nodes[i] = PathNode.Read(lr);
 							}
 
-							var model = (SimpleObject)ItemDefinition.objects[group.ModelIndex];
+							var model = (IObject)ItemDefinition.objects[group.ModelIndex];
 
-							model.Paths?.Add(group);
+							model.Paths.Add(group);
 
 							break;
 						}

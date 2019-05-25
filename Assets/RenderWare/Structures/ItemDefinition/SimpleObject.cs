@@ -8,8 +8,10 @@ namespace RenderWare.Structures
 {
 	[System.Serializable]
 	[StructLayout(LayoutKind.Sequential)]
-	public struct SimpleObject : IAscii, IItemDefinition, ISerializable
+	public struct SimpleObject : IAscii, IObject, ISerializable
 	{
+		public const string Keyword = "objs";
+		
 		private int id; // 0
 		private string modelName; // 1
 		private string textureName; // 2
@@ -21,11 +23,13 @@ namespace RenderWare.Structures
 
 		public ObjectFlags Flags; // 5
 
-		[System.NonSerialized] public List<PathGroup> Paths;
+		private List<PathGroup> paths;
 
 		public int Id => this.id;
 		public string ModelName => this.modelName;
 		public string TextureName => this.textureName;
+		
+		public List<PathGroup> Paths => this.paths;
 
 		public static SimpleObject Read(AsciiReader lr)
 		{
@@ -46,7 +50,7 @@ namespace RenderWare.Structures
 
 			info.Flags = lr.ReadEnum<ObjectFlags>();
 
-			info.Paths = new List<PathGroup>();
+			info.paths = new List<PathGroup>();
 
 			return info;
 		}
@@ -82,7 +86,7 @@ namespace RenderWare.Structures
 
 			this.Flags = (ObjectFlags)info.GetInt32("Flags");
 			
-			this.Paths = new List<PathGroup>();
+			this.paths = new List<PathGroup>();
 		}
 	}
 }

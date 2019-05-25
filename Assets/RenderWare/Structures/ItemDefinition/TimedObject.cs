@@ -8,8 +8,10 @@ namespace RenderWare.Structures
 {
 	[System.Serializable]
 	[StructLayout(LayoutKind.Sequential)]
-	public struct TimedObject : IAscii, IItemDefinition, ISerializable
+	public struct TimedObject : IAscii, IObject, ISerializable
 	{
+		public const string Keyword = "tobj";
+		
 		private int id; // 0
 		private string modelName; // 1
 		private string textureName; // 2
@@ -24,12 +26,14 @@ namespace RenderWare.Structures
 		public int TimeOn; // 6
 		public int TimeOff; // 7
 
-		[System.NonSerialized] public List<PathGroup> Paths;
+		private List<PathGroup> paths;
 
 		public int Id => this.id;
 		public string ModelName => this.modelName;
 		public string TextureName => this.textureName;
 
+		public List<PathGroup> Paths => this.paths;
+		
 		public static TimedObject Read(AsciiReader lr)
 		{
 			var info = new TimedObject
@@ -49,10 +53,10 @@ namespace RenderWare.Structures
 
 			info.Flags = lr.ReadEnum<ObjectFlags>();
 
-			info.TimeOn = 0;
-			info.TimeOff = 24;
+			info.TimeOn = lr.ReadInt();
+			info.TimeOff = lr.ReadInt();
 
-			info.Paths = new List<PathGroup>();
+			info.paths = new List<PathGroup>();
 
 			return info;
 		}
@@ -89,10 +93,11 @@ namespace RenderWare.Structures
 			}
 
 			this.Flags = (ObjectFlags)info.GetInt32("Flags");
+
 			this.TimeOn = info.GetInt32("TimeOn");
 			this.TimeOff = info.GetInt32("TimeOff");
 
-			this.Paths = new List<PathGroup>();
+			this.paths = new List<PathGroup>();
 		}
 	}
 }

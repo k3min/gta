@@ -7,11 +7,14 @@ namespace RenderWare.Structures
 	[StructLayout(LayoutKind.Sequential)]
 	public struct PathGroup : IAscii
 	{
+		public const string Keyword = "path";
 		public const int NodeCount = 12;
 
 		public string TypeString;
 		public int ModelIndex;
 		public string ModelName;
+		
+		[MarshalAs(UnmanagedType.ByValArray, SizeConst = PathGroup.NodeCount)]
 		public PathNode[] Nodes;
 
 		public PathGroupType Type

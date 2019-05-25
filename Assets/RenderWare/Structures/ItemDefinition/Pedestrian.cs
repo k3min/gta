@@ -5,8 +5,10 @@ using RenderWare.Loaders;
 namespace RenderWare.Structures
 {
 	[StructLayout(LayoutKind.Sequential)]
-	public struct PedestrianObject : IAscii, IItemDefinition
+	public struct Pedestrian : IAscii, IItemDefinition
 	{
+		public const string Keyword = "peds";
+		
 		private int id;
 		private string modelName; 
 		private string textureName;
@@ -100,9 +102,9 @@ namespace RenderWare.Structures
 			}
 		}
 
-		public static PedestrianObject Read(AsciiReader lr)
+		public static Pedestrian Read(AsciiReader lr)
 		{
-			return new PedestrianObject
+			return new Pedestrian
 			{
 				id = lr.ReadInt(),
 				modelName = lr.ReadString(),

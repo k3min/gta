@@ -4,8 +4,10 @@ using RenderWare.Loaders;
 namespace RenderWare.Structures
 {
 	[StructLayout(LayoutKind.Sequential)]
-	public struct VehicleObject : IAscii, IItemDefinition
+	public struct Vehicle : IAscii, IItemDefinition
 	{
+		public const string Keyword = "cars";
+		
 		private int id;
 		private string modelName;
 		private string textureName;
@@ -92,9 +94,9 @@ namespace RenderWare.Structures
 			}
 		}
 
-		public static VehicleObject Read(AsciiReader lr)
+		public static Vehicle Read(AsciiReader lr)
 		{
-			var info = new VehicleObject
+			var info = new Vehicle
 			{
 				id = lr.ReadInt(),
 				modelName = lr.ReadString(),

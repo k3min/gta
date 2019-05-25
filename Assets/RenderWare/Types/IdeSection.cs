@@ -3,11 +3,11 @@ namespace RenderWare.Types
 	public enum IdeSection
 	{
 		None,
-		Objects,
+		SimpleObjects,
 		TimedObjects,
-		CutSceneObjects,
+		CutScenes,
 		Vehicles,
 		Pedestrians,
-		Paths
+		PathGroups
 	}
 }
