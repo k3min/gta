@@ -4,9 +4,12 @@ using RenderWare.Loaders;
 namespace RenderWare.Structures
 {
 	[StructLayout(LayoutKind.Sequential)]
-	public struct VehicleInfo : IAscii, IObjectInfo
+	public struct VehicleObject : IAscii, IItemDefinition
 	{
-		public TObjectInfo Info;
+		private int id;
+		private string modelName;
+		private string textureName;
+
 		public string TypeString;
 		public string HandlingId;
 		public string Name;
@@ -22,9 +25,9 @@ namespace RenderWare.Structures
 		// Plane
 		public int LodModelId;
 		
-		public int Id => this.Info.Id;
-		public string ModelName => this.Info.ModelName;
-		public string TextureName => this.Info.TextureName;
+		public int Id => this.id;
+		public string ModelName => this.modelName;
+		public string TextureName => this.textureName;
 
 		public VehicleType Type
 		{
@@ -89,11 +92,13 @@ namespace RenderWare.Structures
 			}
 		}
 
-		public static VehicleInfo Read(AsciiReader lr)
+		public static VehicleObject Read(AsciiReader lr)
 		{
-			var info = new VehicleInfo
+			var info = new VehicleObject
 			{
-				Info = TObjectInfo.Read(lr),
+				id = lr.ReadInt(),
+				modelName = lr.ReadString(),
+				textureName = lr.ReadString(),
 				TypeString = lr.ReadString(),
 				HandlingId = lr.ReadString(),
 				Name = lr.ReadString(),

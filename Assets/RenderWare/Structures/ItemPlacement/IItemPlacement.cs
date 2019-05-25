@@ -1,6 +1,6 @@
 namespace RenderWare.Structures
 {
-	public interface IItem
+	public interface IItemPlacement
 	{
 		
 	}

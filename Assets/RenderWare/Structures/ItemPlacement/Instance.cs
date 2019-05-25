@@ -4,7 +4,7 @@ using RenderWare.Loaders;
 namespace RenderWare.Structures
 {
 	[StructLayout(LayoutKind.Sequential)]
-	public struct Instance : IAscii, IItem
+	public struct Instance : IAscii, IItemPlacement
 	{
 		public const string Keyword = "inst";
 

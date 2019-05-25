@@ -9,19 +9,20 @@ namespace RenderWare.Loaders
 		public const string Keyword = "IPL";
 		public const string End = "end";
 
-		private static readonly Dictionary<System.Type, List<IItem>> items = new Dictionary<System.Type, List<IItem>>
+		private static readonly Dictionary<System.Type, List<IItemPlacement>> items = new Dictionary<System.Type, List<IItemPlacement>>
 		{
-			{typeof(Instance), new List<IItem>()},
-			{typeof(Zone), new List<IItem>()},
-			{typeof(Cull), new List<IItem>()}
+			{typeof(Instance), new List<IItemPlacement>()},
+			{typeof(Zone), new List<IItemPlacement>()},
+			{typeof(Cull), new List<IItemPlacement>()},
+			{typeof(Pickup), new List<IItemPlacement>()}
 		};
 
-		public static void Add<T>(T instance) where T : IItem
+		public static void Add<T>(T instance) where T : IItemPlacement
 		{
 			ItemPlacement.items[typeof(T)].Add(instance);
 		}
 
-		public static void ForEach<T>(System.Action<T> action) where T : IItem
+		public static void ForEach<T>(System.Action<T> action) where T : IItemPlacement
 		{
 			foreach (var item in ItemPlacement.items[typeof(T)])
 			{

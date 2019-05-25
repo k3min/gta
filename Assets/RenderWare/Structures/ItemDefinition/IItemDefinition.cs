@@ -1,6 +1,6 @@
 namespace RenderWare.Structures
 {
-	public interface IObjectInfo
+	public interface IItemDefinition
 	{
 		int Id { get; }
 		string ModelName { get; }

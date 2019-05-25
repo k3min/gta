@@ -5,7 +5,7 @@ using RenderWare.Types;
 namespace RenderWare.Structures
 {
 	[StructLayout(LayoutKind.Sequential)]
-	public struct Cull : IAscii, IItem
+	public struct Cull : IAscii, IItemPlacement
 	{
 		public const string Keyword = "cull";
 

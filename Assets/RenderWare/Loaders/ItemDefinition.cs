@@ -8,14 +8,14 @@ namespace RenderWare.Loaders
 	{
 		public const string Keyword = "IDE";
 
-		private static readonly Dictionary<int, IObjectInfo> objects = new Dictionary<int, IObjectInfo>();
+		private static readonly Dictionary<int, IItemDefinition> objects = new Dictionary<int, IItemDefinition>();
 
-		public static void Add<T>(T info) where T : IObjectInfo
+		public static void Add<T>(T info) where T : IItemDefinition
 		{
 			ItemDefinition.objects.Add(info.Id, info);
 		}
 
-		public static T Get<T>(Instance inst) where T : IObjectInfo
+		public static T Get<T>(Instance inst) where T : IItemDefinition
 		{
 			return (T)ItemDefinition.objects[inst.ModelId];
 		}
@@ -68,27 +68,23 @@ namespace RenderWare.Loaders
 					switch (section)
 					{
 						case IdeSection.Objects:
-						case IdeSection.TimedObjects:
-						{
-							var model = ModelInfo.Read(lr);
-
-							if (section == IdeSection.TimedObjects)
-							{
-								model.TimeOn = lr.ReadInt();
-								model.TimeOff = lr.ReadInt();
-							}
-
-							ItemDefinition.Add(model);
-
+							ItemDefinition.Add(SimpleObject.Read(lr));
 							break;
-						}
+						
+						case IdeSection.TimedObjects:
+							ItemDefinition.Add(TimedObject.Read(lr));
+							break;
+
+						case IdeSection.CutSceneObjects:
+							ItemDefinition.Add(CutSceneObject.Read(lr));
+							break;
 
 						case IdeSection.Vehicles:
-							ItemDefinition.Add(VehicleInfo.Read(lr));
+							ItemDefinition.Add(VehicleObject.Read(lr));
 							break;
 
 						case IdeSection.Pedestrians:
-							ItemDefinition.Add(PedestrianInfo.Read(lr));
+							ItemDefinition.Add(PedestrianObject.Read(lr));
 							break;
 
 						case IdeSection.Paths:
@@ -103,7 +99,7 @@ namespace RenderWare.Loaders
 								group.Nodes[i] = PathNode.Read(lr);
 							}
 
-							var model = (ModelInfo)ItemDefinition.objects[group.ModelIndex];
+							var model = (SimpleObject)ItemDefinition.objects[group.ModelIndex];
 
 							model.Paths?.Add(group);
 

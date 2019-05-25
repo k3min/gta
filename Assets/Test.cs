@@ -31,7 +31,7 @@ public class Test : MonoBehaviour
 				return;
 			}
 
-			var ide = ItemDefinition.Get<ModelInfo>(inst);
+			var ide = ItemDefinition.Get<SimpleObject>(inst);
 
 			if ((ide.Flags & ObjectFlags.Shadows) == ObjectFlags.Shadows)
 			{
@@ -85,7 +85,7 @@ public class Test : MonoBehaviour
 				{
 					var index = binMesh.Meshes[j].MaterialIndex;
 
-					sharedMaterials[index] = this.materials[ide.Info.ModelName.ToLower()][atomic.GeometryIndex][index];
+					sharedMaterials[index] = this.materials[ide.ModelName.ToLower()][atomic.GeometryIndex][index];
 				}
 
 				meshRenderer.sharedMaterials = sharedMaterials;

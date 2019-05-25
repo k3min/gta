@@ -11,7 +11,7 @@ namespace RenderWare.Loaders
 
 		private static readonly Dictionary<string, RwClump> models = new Dictionary<string, RwClump>();
 
-		public static RwClump Get(IObjectInfo info)
+		public static RwClump Get(IItemDefinition info)
 		{
 			return Model.models[info.ModelName.ToLower()];
 		}

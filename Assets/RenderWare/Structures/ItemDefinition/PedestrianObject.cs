@@ -5,9 +5,12 @@ using RenderWare.Loaders;
 namespace RenderWare.Structures
 {
 	[StructLayout(LayoutKind.Sequential)]
-	public struct PedestrianInfo : IAscii, IObjectInfo
+	public struct PedestrianObject : IAscii, IItemDefinition
 	{
-		public TObjectInfo Info;
+		private int id;
+		private string modelName; 
+		private string textureName;
+		
 		public string TypeString;
 		public string Behavior;
 		public string AnimationGroup;
@@ -15,9 +18,9 @@ namespace RenderWare.Structures
 		/// <todo>[MarshalAs(UnmanagedType.Hex)]</todo>
 		public VehicleClass Cars;
 
-		public int Id => this.Info.Id;
-		public string ModelName => this.Info.ModelName;
-		public string TextureName => this.Info.TextureName;
+		public int Id => this.id;
+		public string ModelName => this.modelName;
+		public string TextureName => this.textureName;
 
 		public PedestrianType Type
 		{
@@ -97,11 +100,13 @@ namespace RenderWare.Structures
 			}
 		}
 
-		public static PedestrianInfo Read(AsciiReader lr)
+		public static PedestrianObject Read(AsciiReader lr)
 		{
-			return new PedestrianInfo
+			return new PedestrianObject
 			{
-				Info = TObjectInfo.Read(lr),
+				id = lr.ReadInt(),
+				modelName = lr.ReadString(),
+				textureName = lr.ReadString(),
 				TypeString = lr.ReadString(),
 				Behavior = lr.ReadString(),
 				AnimationGroup = lr.ReadString(),

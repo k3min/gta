@@ -5,7 +5,7 @@ using RenderWare.Loaders;
 namespace RenderWare.Structures
 {
 	[StructLayout(LayoutKind.Sequential)]
-	public struct Zone : IAscii, IItem
+	public struct Zone : IAscii, IItemPlacement
 	{
 		public const string Keyword = "zone";
 

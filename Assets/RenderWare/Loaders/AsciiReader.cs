@@ -7,16 +7,20 @@ namespace RenderWare.Loaders
 		private int index;
 		private readonly string[] tokens;
 
+		public readonly int Size;
+
 		public AsciiReader(string line, string[] delimiters,
 			System.StringSplitOptions options = System.StringSplitOptions.RemoveEmptyEntries)
 		{
 			this.tokens = line.Split(delimiters, options);
+			this.Size = this.tokens.Length;
 		}
 
 		public AsciiReader(string line, char[] delimiters,
 			System.StringSplitOptions options = System.StringSplitOptions.RemoveEmptyEntries)
 		{
 			this.tokens = line.Split(delimiters, options);
+			this.Size = this.tokens.Length;
 		}
 
 		public static void Read(string filePath, System.Action<string> action)
