@@ -17,6 +17,8 @@ public class Test : MonoBehaviour
 	{
 		FileSystem.BasePath = Test.BasePath;
 
+		Text.Load("text/american.gxt");
+
 		Archive.Load("models/gta3.img");
 
 		MapListing.Load("data/default.dat");
@@ -157,6 +159,13 @@ public class Test : MonoBehaviour
 			var center = min + extents;
 
 			Gizmos.DrawWireCube(center, extents * 2f);
+
+#if UNITY_EDITOR
+			if (Text.TryGet(zone.Name, out var zoneName))
+			{
+				UnityEditor.Handles.Label(center, zoneName);
+			}
+#endif
 		});
 
 		Gizmos.color = new Color(0.5f, 1f, 0.5f, 0.5f);

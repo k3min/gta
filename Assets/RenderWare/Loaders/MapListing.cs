@@ -1,3 +1,4 @@
+using RenderWare.Structures;
 using RenderWare.Types;
 
 namespace RenderWare.Loaders
@@ -33,15 +34,12 @@ namespace RenderWare.Loaders
 						break;
 
 					case ItemPlacement.Keyword:
+					case "MAPZONE":
 						ItemPlacement.Load(lr.ReadString());
 						break;
 
 					case "SPLASH":
 						UnityEngine.Debug.LogWarning($"SPLASH: {lr.ReadString()}");
-						break;
-
-					case "MAPZONE":
-						UnityEngine.Debug.LogWarning($"MAPZONE: {lr.ReadString()}");
 						break;
 
 					default:

@@ -41,5 +41,15 @@ namespace RenderWare.Extensions
 		{
 			return new UnityEngine.Color32(reader.ReadByte(), reader.ReadByte(), reader.ReadByte(), reader.ReadByte());
 		}
+
+		public static void Mark(this BinaryReader reader, System.Action<BinaryReader> action)
+		{
+			var stream = reader.BaseStream;
+			var position = stream.Position;
+			{
+				action(reader);
+			}
+			stream.Seek(position, SeekOrigin.Begin);
+		}
 	}
 }
