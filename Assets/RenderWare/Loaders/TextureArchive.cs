@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using System.IO;
+using System.Threading.Tasks;
 using RenderWare.Structures;
 using RenderWare.Types;
 using Path = System.IO.Path;
@@ -12,9 +12,19 @@ namespace RenderWare.Loaders
 
 		private static readonly Dictionary<string, RwTextureDictionary> textures =
 			new Dictionary<string, RwTextureDictionary>();
+		
+		public static event System.Action<string> OnLoad;
 
-		public static void Load(string filePath)
+		public static async Task Load(string filePath)
 		{
+			await Task.Run(() =>
+			{
+				if (TextureArchive.OnLoad != null)
+				{
+					TextureArchive.OnLoad(filePath);
+				}
+			});
+			
 			RwBinaryReader.LoadChunk(filePath, (stream, chunk) =>
 			{
 				switch (chunk.Type)
@@ -29,13 +39,19 @@ namespace RenderWare.Loaders
 			});
 		}
 
-		public static void Add(string filePath, RwTextureDictionary txd)
+		public static RwTextureDictionary Add(string name, RwTextureDictionary txd)
 		{
-			TextureArchive.textures.Add(Path.GetFileNameWithoutExtension(filePath).ToLower(), txd);
+			name = Path.GetFileNameWithoutExtension(name).ToLower();
+
+			TextureArchive.textures.Add(name, txd);
+
+			return txd;
 		}
 
 		public static bool TryFindTexture(string name, out RwTextureNative result)
 		{
+			name = name.ToLower();
+			
 			result = default;
 
 			foreach (var texture in TextureArchive.textures.Values)
@@ -44,7 +60,7 @@ namespace RenderWare.Loaders
 				{
 					result = texture.Textures[i];
 
-					if (string.Equals(result.Texture.Name, name, System.StringComparison.CurrentCultureIgnoreCase))
+					if (result.Texture.Name.ToLower() == name)
 					{
 						return true;
 					}

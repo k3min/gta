@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using RenderWare.Structures;
 using RenderWare.Types;
 
@@ -21,12 +22,20 @@ namespace RenderWare.Loaders
 		{
 			ItemPlacement.items[typeof(T)].Add(instance);
 		}
-
+		
 		public static void ForEach<T>(System.Action<T> action) where T : IItemPlacement
 		{
 			foreach (var item in ItemPlacement.items[typeof(T)])
 			{
 				action((T)item);
+			}
+		}
+
+		public static async Task ForEach<T>(System.Func<T, Task> action) where T : IItemPlacement
+		{
+			foreach (var item in ItemPlacement.items[typeof(T)])
+			{
+				await action((T)item);
 			}
 		}
 
@@ -55,7 +64,7 @@ namespace RenderWare.Loaders
 		{
 			var section = IplSection.None;
 
-			AsciiReader.Read(filePath, (line) =>
+			AsciiReader.Read(filePath, (sr, line) =>
 			{
 				if (line.ToLower() == ItemPlacement.End)
 				{

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using RenderWare;
 using RenderWare.Extensions;
 using RenderWare.Loaders;
@@ -12,21 +13,34 @@ public class Test : MonoBehaviour
 
 	private readonly List<GameObject> gameObjects = new List<GameObject>();
 	private readonly Dictionary<string, Material[][]> materials = new Dictionary<string, Material[][]>();
+	private Material material;
 
-	private void Start()
+	private string load;
+
+	private async void Start()
 	{
+#if UNITY_EDITOR
+		this.material = UnityEditor.AssetDatabase.GetBuiltinExtraResource<Material>("Default-Material.mat");
+#endif
+
 		FileSystem.BasePath = Test.BasePath;
+
+		Archive.Excluded.Add("lod");
+
+		Archive.OnLoad += (img, entry) => this.load = $"{img.FilePath}: {entry.Name.ToLower()}";
+		TextureArchive.OnLoad += (x) => this.load = x.ToLower();
+		Model.OnLoad += (x) => this.load = x.ToLower();
 
 		Text.Load("text/american.gxt");
 
 		Archive.Load("models/gta3.img");
 
-		MapListing.Load("data/default.dat");
-		MapListing.Load("data/gta3.dat");
+		await MapListing.Load("data/default.dat");
+		await MapListing.Load("data/gta3.dat");
 
-		this.ProcessMaterials();
+		//await this.ProcessMaterials();
 
-		ItemPlacement.ForEach<Instance>((inst) =>
+		await ItemPlacement.ForEach<Instance>(async (inst) =>
 		{
 			if (inst.ModelName.ToLower().Contains("lod"))
 			{
@@ -51,7 +65,7 @@ public class Test : MonoBehaviour
 			go.transform.localRotation = inst.Rotation.xzyw();
 			go.transform.localScale = inst.Scale;
 
-			var model = Model.Get(ide);
+			var model = await Model.Find(ide.ModelName);
 
 			for (var i = 0; i < model.AtomicCount; i++)
 			{
@@ -87,7 +101,8 @@ public class Test : MonoBehaviour
 				{
 					var index = binMesh.Meshes[j].MaterialIndex;
 
-					sharedMaterials[index] = this.materials[ide.ModelName.ToLower()][atomic.GeometryIndex][index];
+					sharedMaterials[index] = this.material;
+					//sharedMaterials[index] = this.materials[ide.ModelName.ToLower()][atomic.GeometryIndex][index];
 				}
 
 				meshRenderer.sharedMaterials = sharedMaterials;
@@ -95,10 +110,13 @@ public class Test : MonoBehaviour
 		});
 	}
 
-	private void ProcessMaterials()
+	/// <todo>Optimize this</todo>
+	private async Task ProcessMaterials()
 	{
-		Model.ForEach((id, model) =>
+		await Model.ForEach(async (id, model) =>
 		{
+			await Task.Run(() => this.load = $"Processing material {id}");
+
 			var texture = default(RwTextureNative);
 			var geometryList = model.GeometryList;
 
@@ -142,6 +160,14 @@ public class Test : MonoBehaviour
 		foreach (var go in this.gameObjects)
 		{
 			Object.DestroyImmediate(go);
+		}
+	}
+
+	private void OnGUI()
+	{
+		if (this.load != null)
+		{
+			GUI.Label(new Rect(10, 10, 600, 20), this.load);
 		}
 	}
 

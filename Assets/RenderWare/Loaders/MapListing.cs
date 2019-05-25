@@ -1,13 +1,13 @@
-using RenderWare.Structures;
+using System.Threading.Tasks;
 using RenderWare.Types;
 
 namespace RenderWare.Loaders
 {
 	public static class MapListing
 	{
-		public static void Load(string filePath)
+		public static async Task Load(string filePath)
 		{
-			AsciiReader.Read(filePath, (line) =>
+			await AsciiReader.Read(filePath, async (sr,line) =>
 			{
 				var lr = new AsciiReader(line, new[] {' '}, System.StringSplitOptions.None);
 				var keyword = lr.ReadString();
@@ -15,18 +15,18 @@ namespace RenderWare.Loaders
 				switch (keyword)
 				{
 					case Archive.Keyword:
-						throw new System.NotSupportedException($"{Archive.Keyword}: {lr.ReadString()}");
+						throw new System.NotImplementedException($"{Archive.Keyword}: {lr.ReadString()}");
 
 					case ItemDefinition.Keyword:
 						ItemDefinition.Load(lr.ReadString());
 						break;
 
 					case TextureArchive.Keyword:
-						TextureArchive.Load(lr.ReadString());
+						await TextureArchive.Load(lr.ReadString());
 						break;
 
 					case Model.Keyword:
-						Model.Load(lr.ReadString());
+						await Model.Load(lr.ReadString());
 						break;
 
 					case Collision.Keyword:

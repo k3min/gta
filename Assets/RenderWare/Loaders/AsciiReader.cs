@@ -1,4 +1,5 @@
 using System.IO;
+using System.Threading.Tasks;
 
 namespace RenderWare.Loaders
 {
@@ -22,12 +23,7 @@ namespace RenderWare.Loaders
 			this.tokens = line.Split(delimiters, options);
 			this.Size = this.tokens.Length;
 		}
-
-		public static void Read(string filePath, System.Action<string> action)
-		{
-			AsciiReader.Read(filePath, (reader, line) => action(line));
-		}
-
+		
 		public static void Read(string filePath, System.Action<StreamReader, string> action)
 		{
 			using (var reader = new StreamReader(FileSystem.GetPath(filePath)))
@@ -44,6 +40,26 @@ namespace RenderWare.Loaders
 					}
 
 					action(reader, line);
+				}
+			}
+		}
+		
+		public static async Task Read(string filePath, System.Func<StreamReader, string, Task> action)
+		{
+			using (var reader = new StreamReader(FileSystem.GetPath(filePath)))
+			{
+				string line;
+
+				while ((line = reader.ReadLine()) != null)
+				{
+					line = line.Trim();
+
+					if (string.IsNullOrWhiteSpace(line) || line[0] == '#')
+					{
+						continue;
+					}
+
+					await action(reader, line);
 				}
 			}
 		}
@@ -69,7 +85,7 @@ namespace RenderWare.Loaders
 		{
 			var type = typeof(T);
 			var value = this.ReadString();
-			
+
 			return (T)System.Enum.Parse(type, value);
 		}
 

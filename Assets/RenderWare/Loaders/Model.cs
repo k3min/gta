@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using RenderWare.Structures;
 using RenderWare.Types;
 using Path = System.IO.Path;
@@ -12,21 +13,26 @@ namespace RenderWare.Loaders
 
 		private static readonly Dictionary<string, RwClump> models = new Dictionary<string, RwClump>();
 
-		public static RwClump Get(IItemDefinition info)
-		{
-			return Model.models[info.ModelName.ToLower()];
-		}
+		public static event System.Action<string> OnLoad;
 
-		public static void ForEach(System.Action<string, RwClump> action)
+		public static async Task ForEach(System.Func<string, RwClump, Task> action)
 		{
 			foreach (var model in Model.models)
 			{
-				action(model.Key, model.Value);
+				await action(model.Key, model.Value);
 			}
 		}
 
-		public static void Load(string filePath)
+		public static async Task Load(string filePath)
 		{
+			await Task.Run(() =>
+			{
+				if (Model.OnLoad != null)
+				{
+					Model.OnLoad(filePath);
+				}
+			});
+
 			RwBinaryReader.LoadChunk(filePath, (stream, chunk) =>
 			{
 				switch (chunk.Type)
@@ -38,9 +44,37 @@ namespace RenderWare.Loaders
 			});
 		}
 
-		public static void Add(string name, RwClump dff)
+		public static RwClump Add(string name, RwClump dff)
 		{
-			Model.models.Add(Path.GetFileNameWithoutExtension(name).ToLower(), dff);
+			name = Path.GetFileNameWithoutExtension(name).ToLower();
+
+			Model.models.Add(name, dff);
+
+			return dff;
+		}
+
+		public static async Task<RwClump> Find(string name)
+		{
+			name = Path.GetFileNameWithoutExtension(name).ToLower();
+
+			if (Model.models.TryGetValue(name, out var result))
+			{
+				return result;
+			}
+
+			name = Path.ChangeExtension(name, "dff");
+
+			var found = await Archive.TryFind(name, (dff) =>
+			{
+				result = (RwClump)dff;
+			});
+
+			if (found)
+			{
+				return result;
+			}
+
+			throw new FileNotFoundException(name);
 		}
 	}
 }
