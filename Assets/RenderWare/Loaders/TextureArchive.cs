@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using RenderWare.Structures;
 using RenderWare.Types;
+using Path = System.IO.Path;
 
 namespace RenderWare.Loaders
 {

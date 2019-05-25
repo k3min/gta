@@ -6,16 +6,26 @@ namespace RenderWare.Structures
 {
 	[System.Serializable]
 	[StructLayout(LayoutKind.Sequential)]
-	public struct Pickup : IAscii, IItemPlacement
+	public struct Effect : IAscii, IAttachment
 	{
-		public const string Keyword = "pick";
+		public const string Keyword = "2dfx";
 
-		public static Pickup Read(AsciiReader lr)
+		public int ObjectId;
+		
+		public static Effect Read(AsciiReader lr)
 		{
-			throw new System.NotImplementedException();
+			return new Effect
+			{
+				ObjectId = lr.ReadInt()
+			};
 		}
 
 		public void GetObjectData(SerializationInfo info, StreamingContext context)
+		{
+			throw new System.NotImplementedException();
+		}
+		
+		public Effect(SerializationInfo info, StreamingContext context)
 		{
 			throw new System.NotImplementedException();
 		}

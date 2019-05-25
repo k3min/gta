@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
+using RenderWare.Extensions;
 using RenderWare.Types;
 using RenderWare.Loaders;
 
@@ -8,7 +10,7 @@ namespace RenderWare.Structures
 {
 	[System.Serializable]
 	[StructLayout(LayoutKind.Sequential)]
-	public struct SimpleObject : IAscii, IObject, ISerializable
+	public struct SimpleObject : IAscii, IAttachableObject
 	{
 		public const string Keyword = "objs";
 		
@@ -21,15 +23,14 @@ namespace RenderWare.Structures
 		[MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)]
 		public float[] DrawDistance; // 4
 
-		public ObjectFlags Flags; // 5
+		private ObjectFlags flags; // 5
 
-		private List<PathGroup> paths;
+		private Dictionary<System.Type, List<IAttachment>> attachments;
 
 		public int Id => this.id;
 		public string ModelName => this.modelName;
 		public string TextureName => this.textureName;
-		
-		public List<PathGroup> Paths => this.paths;
+		public ObjectFlags Flags => this.flags;
 
 		public static SimpleObject Read(AsciiReader lr)
 		{
@@ -48,9 +49,9 @@ namespace RenderWare.Structures
 				info.DrawDistance[i] = lr.ReadFloat();
 			}
 
-			info.Flags = lr.ReadEnum<ObjectFlags>();
+			info.flags = lr.ReadEnum<ObjectFlags>();
 
-			info.paths = new List<PathGroup>();
+			info.attachments = new Dictionary<Type, List<IAttachment>>();
 
 			return info;
 		}
@@ -67,7 +68,7 @@ namespace RenderWare.Structures
 				info.AddValue($"DrawDistance{i}", this.DrawDistance[i]);
 			}
 
-			info.AddValue("Flags", (int)this.Flags);
+			info.AddValue("Flags", this.flags,typeof(int));
 		}
 
 		public SimpleObject(SerializationInfo info, StreamingContext context)
@@ -84,9 +85,21 @@ namespace RenderWare.Structures
 				this.DrawDistance[i] = info.GetSingle($"DrawDistance{i}");
 			}
 
-			this.Flags = (ObjectFlags)info.GetInt32("Flags");
+			this.flags = info.GetEnum<ObjectFlags>("Flags",typeof(int));
 			
-			this.paths = new List<PathGroup>();
+			this.attachments = new Dictionary<Type, List<IAttachment>>();
+		}
+
+		public void Attach<T>(T attachment) where T : IAttachment
+		{
+			var type = typeof(T);
+
+			if (!this.attachments.ContainsKey(type))
+			{
+				this.attachments[type] = new List<IAttachment>();
+			}
+
+			this.attachments[type].Add(attachment);
 		}
 	}
 }

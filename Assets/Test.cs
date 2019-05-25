@@ -31,7 +31,7 @@ public class Test : MonoBehaviour
 				return;
 			}
 
-			var ide = ItemDefinition.Get<SimpleObject>(inst);
+			var ide = ItemDefinition.Get<IAttachableObject>(inst);
 
 			if ((ide.Flags & ObjectFlags.Shadows) == ObjectFlags.Shadows)
 			{

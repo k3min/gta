@@ -9,8 +9,9 @@ namespace RenderWare.Loaders
 			AsciiReader.Read(filePath, (line) =>
 			{
 				var lr = new AsciiReader(line, new[] {' '}, System.StringSplitOptions.None);
+				var keyword = lr.ReadString();
 
-				switch (lr.ReadString())
+				switch (keyword)
 				{
 					case Archive.Keyword:
 						throw new System.NotSupportedException($"{Archive.Keyword}: {lr.ReadString()}");
@@ -35,8 +36,16 @@ namespace RenderWare.Loaders
 						ItemPlacement.Load(lr.ReadString());
 						break;
 
+					case "SPLASH":
+						UnityEngine.Debug.LogWarning($"SPLASH: {lr.ReadString()}");
+						break;
+
+					case "MAPZONE":
+						UnityEngine.Debug.LogWarning($"MAPZONE: {lr.ReadString()}");
+						break;
+
 					default:
-						throw new System.NotSupportedException();
+						throw new System.IndexOutOfRangeException(keyword);
 				}
 			});
 		}

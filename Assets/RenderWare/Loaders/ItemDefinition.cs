@@ -22,7 +22,9 @@ namespace RenderWare.Loaders
 
 		private static IdeSection GetSection(string line)
 		{
-			switch (line.ToLower())
+			var keyword = line.ToLower();
+
+			switch (keyword)
 			{
 				case SimpleObject.Keyword:
 					return IdeSection.SimpleObjects;
@@ -30,23 +32,26 @@ namespace RenderWare.Loaders
 				case TimedObject.Keyword:
 					return IdeSection.TimedObjects;
 
-				case CutScene.Keyword:
-					return IdeSection.CutScenes;
+				case CutSceneObject.Keyword:
+					return IdeSection.CutSceneObjects;
 
-				case Vehicle.Keyword:
-					return IdeSection.Vehicles;
+				case VehicleObject.Keyword:
+					return IdeSection.VehicleObjects;
 
-				case Pedestrian.Keyword:
-					return IdeSection.Pedestrians;
+				case PedestrianObject.Keyword:
+					return IdeSection.PedestrianObjects;
 
-				case PathGroup.Keyword:
-					return IdeSection.PathGroups;
-				
+				case Path.Keyword:
+					return IdeSection.Paths;
+
+				case Effect.Keyword:
+					return IdeSection.Effects;
+
 				default:
-					throw new System.IndexOutOfRangeException();
+					throw new System.IndexOutOfRangeException(keyword);
 			}
 		}
-		
+
 		public static void Load(string filePath)
 		{
 			var section = IdeSection.None;
@@ -70,44 +75,51 @@ namespace RenderWare.Loaders
 						case IdeSection.SimpleObjects:
 							ItemDefinition.Add(SimpleObject.Read(lr));
 							break;
-						
+
 						case IdeSection.TimedObjects:
 							ItemDefinition.Add(TimedObject.Read(lr));
 							break;
 
-						case IdeSection.CutScenes:
-							ItemDefinition.Add(CutScene.Read(lr));
+						case IdeSection.CutSceneObjects:
+							ItemDefinition.Add(CutSceneObject.Read(lr));
 							break;
 
-						case IdeSection.Vehicles:
-							ItemDefinition.Add(Vehicle.Read(lr));
+						case IdeSection.VehicleObjects:
+							ItemDefinition.Add(VehicleObject.Read(lr));
 							break;
 
-						case IdeSection.Pedestrians:
-							ItemDefinition.Add(Pedestrian.Read(lr));
+						case IdeSection.PedestrianObjects:
+							ItemDefinition.Add(PedestrianObject.Read(lr));
 							break;
 
-						case IdeSection.PathGroups:
+						case IdeSection.Paths:
 						{
-							var group = PathGroup.Read(lr);
+							var path = Path.Read(lr);
 
 							for (var i = 0; i < 12; i++)
 							{
 								line = sr.ReadLine();
 								lr = new AsciiReader(line, new[] {'\t', ' ', ','});
 
-								group.Nodes[i] = PathNode.Read(lr);
+								path.Nodes[i] = PathNode.Read(lr);
 							}
 
-							var model = (IObject)ItemDefinition.objects[group.ModelIndex];
-
-							model.Paths.Add(group);
+							((IAttachableObject)ItemDefinition.objects[path.ObjectId]).Attach(path);
 
 							break;
 						}
-						
+
+						case IdeSection.Effects:
+						{
+							var effect = Effect.Read(lr);
+
+							((IAttachableObject)ItemDefinition.objects[effect.ObjectId]).Attach(effect);
+
+							break;
+						}
+
 						default:
-							throw new System.NotSupportedException();
+							throw new System.IndexOutOfRangeException(section.ToString());
 					}
 				}
 			});

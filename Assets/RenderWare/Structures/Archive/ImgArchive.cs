@@ -16,8 +16,8 @@ namespace RenderWare.Structures
 		{
 			filePath = FileSystem.GetPath(filePath);
 
-			var dirFilePath = Path.ChangeExtension(filePath, "dir");
-			var imgFilePath = Path.ChangeExtension(filePath, "img");
+			var dirFilePath = System.IO.Path.ChangeExtension(filePath, "dir");
+			var imgFilePath = System.IO.Path.ChangeExtension(filePath, "img");
 
 			using (var fs = File.OpenRead(dirFilePath))
 			using (var br = new BinaryReader(fs))

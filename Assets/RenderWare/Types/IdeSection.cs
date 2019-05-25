@@ -5,9 +5,10 @@ namespace RenderWare.Types
 		None,
 		SimpleObjects,
 		TimedObjects,
-		CutScenes,
-		Vehicles,
-		Pedestrians,
-		PathGroups
+		CutSceneObjects,
+		VehicleObjects,
+		PedestrianObjects,
+		Paths,
+		Effects
 	}
 }

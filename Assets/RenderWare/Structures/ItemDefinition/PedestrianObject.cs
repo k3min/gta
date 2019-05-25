@@ -1,23 +1,25 @@
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
+using RenderWare.Extensions;
 using RenderWare.Types;
 using RenderWare.Loaders;
 
 namespace RenderWare.Structures
 {
+	[System.Serializable]
 	[StructLayout(LayoutKind.Sequential)]
-	public struct Pedestrian : IAscii, IItemDefinition
+	public struct PedestrianObject : IAscii, IItemDefinition
 	{
 		public const string Keyword = "peds";
-		
+
 		private int id;
-		private string modelName; 
+		private string modelName;
 		private string textureName;
-		
-		public string TypeString;
+
+		private string type;
 		public string Behavior;
 		public string AnimationGroup;
 
-		/// <todo>[MarshalAs(UnmanagedType.Hex)]</todo>
 		public VehicleClass Cars;
 
 		public int Id => this.id;
@@ -28,7 +30,7 @@ namespace RenderWare.Structures
 		{
 			get
 			{
-				switch (this.TypeString)
+				switch (this.type)
 				{
 					case "PLAYER1":
 						return PedestrianType.Player1;
@@ -102,18 +104,40 @@ namespace RenderWare.Structures
 			}
 		}
 
-		public static Pedestrian Read(AsciiReader lr)
+		public static PedestrianObject Read(AsciiReader lr)
 		{
-			return new Pedestrian
+			return new PedestrianObject
 			{
 				id = lr.ReadInt(),
 				modelName = lr.ReadString(),
 				textureName = lr.ReadString(),
-				TypeString = lr.ReadString(),
+				type = lr.ReadString(),
 				Behavior = lr.ReadString(),
 				AnimationGroup = lr.ReadString(),
 				Cars = (VehicleClass)lr.ReadHex()
 			};
+		}
+
+		public void GetObjectData(SerializationInfo info, StreamingContext context)
+		{
+			info.AddValue("Id", this.id);
+			info.AddValue("ModelName", this.modelName, typeof(string));
+			info.AddValue("TextureName", this.textureName, typeof(string));
+			info.AddValue("Type", this.type, typeof(string));
+			info.AddValue("Behavior", this.Behavior, typeof(string));
+			info.AddValue("AnimationGroup", this.AnimationGroup, typeof(string));
+			info.AddValue("Cars", this.Cars.ToString("X"), typeof(string));
+		}
+
+		public PedestrianObject(SerializationInfo info, StreamingContext context)
+		{
+			this.id = info.GetInt32("Id");
+			this.modelName = info.GetString("ModelName");
+			this.textureName = info.GetString("TextureName");
+			this.type = info.GetString("Type");
+			this.Behavior = info.GetString("Behavior");
+			this.AnimationGroup = info.GetString("AnimationGroup");
+			this.Cars = (VehicleClass)info.GetHex("Cars");
 		}
 	}
 }
