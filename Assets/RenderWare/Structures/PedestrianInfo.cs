@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using RenderWare.Types;
 using RenderWare.Loaders;
+
 namespace RenderWare.Structures
 {
 	[StructLayout(LayoutKind.Sequential)]
@@ -10,13 +11,14 @@ namespace RenderWare.Structures
 		public string TypeString;
 		public string Behavior;
 		public string AnimationGroup;
+
 		/// <todo>[MarshalAs(UnmanagedType.Hex)]</todo>
 		public VehicleClass Cars;
 
 		public int Id => this.Info.Id;
 		public string ModelName => this.Info.ModelName;
 		public string TextureName => this.Info.TextureName;
-		
+
 		public PedestrianType Type
 		{
 			get

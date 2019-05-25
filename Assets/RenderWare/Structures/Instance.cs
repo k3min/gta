@@ -7,7 +7,7 @@ namespace RenderWare.Structures
 	public struct Instance : IAscii, IItem
 	{
 		public const string Keyword = "inst";
-		
+
 		public int ModelId;
 		public string ModelName;
 		public UnityEngine.Vector3 Position;

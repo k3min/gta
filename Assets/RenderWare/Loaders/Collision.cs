@@ -26,17 +26,12 @@ namespace RenderWare.Loaders
 		{
 			var collision = Collision.collisions[zone];
 
-			if (collision.ContainsKey(coll.ModelIndex))
+			if (!collision.ContainsKey(coll.ModelIndex))
 			{
-				collision[coll.ModelIndex].Add(coll);
+				collision[coll.ModelIndex] = new List<CollisionModel>();
 			}
-			else
-			{
-				collision[coll.ModelIndex] = new List<CollisionModel>
-				{
-					coll
-				};
-			}
+
+			collision[coll.ModelIndex].Add(coll);
 		}
 	}
 }

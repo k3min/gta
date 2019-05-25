@@ -1,13 +1,14 @@
 using System.Runtime.InteropServices;
 using RenderWare.Types;
 using RenderWare.Loaders;
+
 namespace RenderWare.Structures
 {
 	[StructLayout(LayoutKind.Sequential)]
 	public struct PathGroup : IAscii
 	{
 		public const int NodeCount = 12;
-		
+
 		public string TypeString;
 		public int ModelIndex;
 		public string ModelName;

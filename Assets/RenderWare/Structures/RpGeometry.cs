@@ -26,7 +26,7 @@ namespace RenderWare.Structures
 		public RpTriangle[] Triangles; // 9
 
 		public UnityEngine.BoundingSphere BoundingSphere; // 10
-		
+
 		[MarshalAs(UnmanagedType.Bool)] public bool HasVertices; // 11
 		[MarshalAs(UnmanagedType.Bool)] public bool HasNormals; // 12
 
@@ -80,7 +80,7 @@ namespace RenderWare.Structures
 			{
 				geometry.Vertices = reader.ReadVector3(geometry.VertexCount);
 			}
-			
+
 			if (geometry.HasNormals)
 			{
 				geometry.Normals = reader.ReadVector3(geometry.VertexCount);

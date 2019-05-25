@@ -9,15 +9,14 @@ namespace RenderWare.Structures
 		public UnityEngine.Vector3 Right;
 		public UnityEngine.Vector3 Up;
 		public UnityEngine.Vector3 Forward;
-		
+
 		public UnityEngine.Vector3 Position;
-		
+
 		public int ParentIndex;
 
 		public int Unknown;
-		
-		[System.NonSerialized]
-		public string Name;
+
+		[System.NonSerialized] public string Name;
 
 		public static RwFrame Read(RwBinaryReader reader)
 		{
@@ -31,7 +30,7 @@ namespace RenderWare.Structures
 				Unknown = reader.ReadInt()
 			};
 		}
-		
+
 		public override string ToString()
 		{
 			return string.IsNullOrEmpty(this.Name) ? base.ToString() : this.Name;

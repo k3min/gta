@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using RenderWare.Types;
 using RenderWare.Loaders;
+
 namespace RenderWare.Structures
 {
 	[StructLayout(LayoutKind.Sequential)]
@@ -16,11 +17,11 @@ namespace RenderWare.Structures
 		public int TimeOff;
 
 		[System.NonSerialized] public List<PathGroup> Paths;
-		
+
 		public int Id => this.Info.Id;
 		public string ModelName => this.Info.ModelName;
 		public string TextureName => this.Info.TextureName;
-		
+
 		public static ModelInfo Read(AsciiReader lr)
 		{
 			var info = new ModelInfo

@@ -8,7 +8,7 @@ namespace RenderWare.Structures
 	public struct Cull : IAscii, IItem
 	{
 		public const string Keyword = "cull";
-		
+
 		public UnityEngine.Vector3 Center;
 		public UnityEngine.Vector3 Min;
 		public UnityEngine.Vector3 Max;

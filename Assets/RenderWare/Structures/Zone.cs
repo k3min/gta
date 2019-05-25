@@ -8,7 +8,7 @@ namespace RenderWare.Structures
 	public struct Zone : IAscii, IItem
 	{
 		public const string Keyword = "zone";
-		
+
 		public string Name;
 		public int Type;
 		public UnityEngine.Vector3 Min;

@@ -8,6 +8,7 @@ namespace RenderWare.Structures
 	public struct RwGeometryList : IRwBinaryStream, System.IDisposable
 	{
 		public int GeometryCount; // 0
+
 		[MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)]
 		public RpGeometry[] Geometries; // 1
 
@@ -37,10 +38,10 @@ namespace RenderWare.Structures
 					}
 				}
 			});
-			
+
 			return geometryList;
 		}
-		
+
 		public void Dispose()
 		{
 			for (var i = 0; i < this.GeometryCount; i++)

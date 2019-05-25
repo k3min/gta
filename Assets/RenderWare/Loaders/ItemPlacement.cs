@@ -44,7 +44,7 @@ namespace RenderWare.Loaders
 
 				case Pickup.Keyword:
 					return IplSection.Pickups;
-				
+
 				default:
 					throw new System.IndexOutOfRangeException();
 			}
@@ -85,7 +85,7 @@ namespace RenderWare.Loaders
 						case IplSection.Pickups:
 							ItemPlacement.Add(Pickup.Read(lr));
 							break;
-						
+
 						default:
 							throw new System.NotSupportedException();
 					}
