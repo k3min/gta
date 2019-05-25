@@ -8,7 +8,7 @@ namespace RenderWare
 
 		public static string GetPath(string path)
 		{
-			return Path.Combine(FileSystem.BasePath, path);
+			return Path.Combine(FileSystem.BasePath, path).Replace('\\', '/');
 		}
 	}
 }

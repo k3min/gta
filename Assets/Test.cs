@@ -9,7 +9,8 @@ using UnityEngine;
 
 public class Test : MonoBehaviour
 {
-	public const string BasePath = "C:/Program Files (x86)/Steam/steamapps/common/Grand Theft Auto 3";
+	public string BasePath =
+		"/Users/k3min/Applications/Wineskin/GTA III.app/Contents/Resources/drive_c/Program Files/GTA III";
 
 	private readonly List<GameObject> gameObjects = new List<GameObject>();
 	private readonly Dictionary<string, Material[][]> materials = new Dictionary<string, Material[][]>();
@@ -23,7 +24,7 @@ public class Test : MonoBehaviour
 		this.material = UnityEditor.AssetDatabase.GetBuiltinExtraResource<Material>("Default-Material.mat");
 #endif
 
-		FileSystem.BasePath = Test.BasePath;
+		FileSystem.BasePath = this.BasePath;
 
 		Archive.Excluded.Add("lod");
 

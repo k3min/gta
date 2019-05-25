@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
@@ -51,7 +50,7 @@ namespace RenderWare.Structures
 
 			info.flags = lr.ReadEnum<ObjectFlags>();
 
-			info.attachments = new Dictionary<Type, List<IAttachment>>();
+			info.attachments = new Dictionary<System.Type, List<IAttachment>>();
 
 			return info;
 		}
@@ -87,7 +86,7 @@ namespace RenderWare.Structures
 
 			this.flags = info.GetEnum<ObjectFlags>("Flags",typeof(int));
 			
-			this.attachments = new Dictionary<Type, List<IAttachment>>();
+			this.attachments = new Dictionary<System.Type, List<IAttachment>>();
 		}
 
 		public void Attach<T>(T attachment) where T : IAttachment
