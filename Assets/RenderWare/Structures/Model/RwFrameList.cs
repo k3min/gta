@@ -8,8 +8,11 @@ namespace RenderWare.Structures
 	public struct RwFrameList : IRwBinaryStream
 	{
 		public int FrameCount; // 0
+
 		[MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)]
 		public RwFrame[] Frames; // 1
+
+		[System.NonSerialized] public string[] FrameNames;
 
 		public static RwFrameList Read(RwBinaryReader reader)
 		{
@@ -18,36 +21,40 @@ namespace RenderWare.Structures
 				FrameCount = reader.ReadInt()
 			};
 
-			frameList.Frames = reader.Read(RwFrame.Read, frameList.FrameCount);
+			frameList.Frames = reader.Read<RwFrame>(frameList.FrameCount, RwFrame.SizeOf);
+
+			frameList.FrameNames = new string[frameList.FrameCount];
 
 			var frameIndex = 0;
 
-			reader.ConsumeChunk((chunk) =>
+			foreach (var chunk in reader.ConsumeChunk())
 			{
 				switch (chunk.Type)
 				{
 					case SectionType.Extension:
 					{
-						reader.ConsumeInnerChunk(chunk,(innerStream, extension) =>
+						var innerStream = reader.GetInnerStream(chunk.Size);
+
+						foreach (var innerChunk in innerStream.ConsumeChunk())
 						{
-							switch (extension.Type)
+							switch (innerChunk.Type)
 							{
 								case SectionType.Frame:
 								{
 									if (frameIndex < frameList.FrameCount)
 									{
-										frameList.Frames[frameIndex++].Name = innerStream.ReadString(innerStream.Size);
+										frameList.FrameNames[frameIndex++] = innerStream.ReadString(innerStream.Size);
 									}
 
 									break;
 								}
 							}
-						});
+						}
 
 						break;
 					}
 				}
-			});
+			}
 
 			return frameList;
 		}

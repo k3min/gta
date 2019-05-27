@@ -20,13 +20,13 @@ namespace RenderWare.Structures
 				MaterialCount = reader.ReadInt()
 			};
 
-			materialList.Instances = reader.ReadInt(materialList.MaterialCount);
+			materialList.Instances = reader.Read<int>(materialList.MaterialCount, 4);
 
 			materialList.Materials = new RwMaterial[materialList.MaterialCount];
 
 			var materialIndex = 0;
 
-			reader.ConsumeChunk((chunk) =>
+			foreach (var chunk in reader.ConsumeChunk())
 			{
 				switch (chunk.Type)
 				{
@@ -34,13 +34,13 @@ namespace RenderWare.Structures
 					{
 						if (materialIndex < materialList.MaterialCount)
 						{
-							materialList.Materials[materialIndex++] = reader.Read(chunk, RwMaterial.Read);
+							materialList.Materials[materialIndex++] = RwMaterial.Read(reader.ReadInnerChunk(chunk));
 						}
 
 						break;
 					}
 				}
-			});
+			}
 
 			return materialList;
 		}

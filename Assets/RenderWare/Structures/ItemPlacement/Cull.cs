@@ -25,7 +25,7 @@ namespace RenderWare.Structures
 				Center = ar.ReadVector3(),
 				Min = ar.ReadVector3(),
 				Max = ar.ReadVector3(),
-				Attribute = ar.ReadEnum<CullAttributeFlags>(),
+				Attribute = (CullAttributeFlags)ar.ReadInt(),
 				WantedLevelDrop = ar.ReadInt()
 			};
 		}

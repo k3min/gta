@@ -7,34 +7,26 @@ namespace RenderWare.Structures
 	[StructLayout(LayoutKind.Sequential)]
 	public struct RwChunk : IRwBinaryStream
 	{
-		public const int SizeOf = 12;
+		public const int SizeOf = 4 + 4 + 4;
 
 		public SectionType Type;
 		public int Size;
 		public int Version;
 
-		public static RwChunk Read(RwBinaryReader reader)
+		public static bool TryRead(RwBinaryReader reader, out RwChunk chunk)
 		{
+			chunk = default;
+
 			var position = reader.Position;
 
 			if (position + RwChunk.SizeOf > reader.Size)
 			{
-				throw new EndOfRwBinaryStreamException();
+				return false;
 			}
 
-			var chunk = new RwChunk
-			{
-				Type = reader.ReadEnum<SectionType>(),
-				Size = reader.ReadInt(),
-				Version = reader.ReadInt()
-			};
+			chunk = reader.Read<RwChunk>(RwChunk.SizeOf);
 
-			if (position + chunk.Size > reader.Size)
-			{
-				throw new EndOfRwBinaryStreamException(chunk.Type.ToString());
-			}
-
-			return chunk;
+			return (position + chunk.Size <= reader.Size);
 		}
 
 		public override string ToString()

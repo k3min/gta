@@ -1,22 +1,13 @@
 using System.Runtime.InteropServices;
-using RenderWare.Loaders;
 
 namespace RenderWare.Structures
 {
 	[StructLayout(LayoutKind.Sequential)]
-	public struct TFace
+	public unsafe struct TFace
 	{
-		[MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.I4, SizeConst = 3)]
-		public int[] Triangle;
+		public const int SizeOf = (3 * 4) + TSurface.SizeOf;
+		
+		public fixed int Triangle[3];
 		public TSurface Surface;
-
-		public static TFace Read(RwBinaryReader br)
-		{
-			return new TFace
-			{
-				Triangle = br.ReadInt(3),
-				Surface = TSurface.Read(br)
-			};
-		}
 	}
 }

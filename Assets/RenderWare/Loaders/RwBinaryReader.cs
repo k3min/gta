@@ -1,5 +1,5 @@
+using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices;
 using RenderWare.Structures;
 using RenderWare.Types;
 
@@ -26,7 +26,7 @@ namespace RenderWare.Loaders
 			this.Size = size;
 		}
 
-		protected RwBinaryReader(byte[] buffer, int offset = 0) : this(buffer, offset, buffer.Length)
+		public RwBinaryReader(byte[] buffer, int offset = 0) : this(buffer, offset, buffer.Length)
 		{
 		}
 
@@ -42,21 +42,9 @@ namespace RenderWare.Loaders
 			return inner;
 		}
 
-		public RwBinaryReader GetInnerStream(RwChunk chunk)
-		{
-			return this.GetInnerStream(chunk.Size);
-		}
-
 		public static RwBinaryReader Load(string filePath)
 		{
 			return new RwBinaryReader(File.ReadAllBytes(FileSystem.GetPath(filePath)));
-		}
-
-		public static void LoadChunk(string filePath, System.Action<RwBinaryReader, RwChunk> action)
-		{
-			var stream = RwBinaryReader.Load(filePath);
-
-			action(stream, RwChunk.Read(stream));
 		}
 
 		public byte ReadByte()
@@ -71,189 +59,161 @@ namespace RenderWare.Loaders
 			this.index += count;
 		}
 
-		public int ReadPacked(int bytes)
+		public unsafe short ReadShort()
 		{
-			var result = 0;
+			short @short;
 
-			for (var i = 0; i < bytes; i++)
+			fixed (byte* @byte = &this.buffer[this.index])
 			{
-				result |= this.ReadByte() << (i << 0x3);
+				@short = *((short*)@byte);
 			}
 
-			return result;
+			this.index += 2;
+
+			return @short;
 		}
 
-		public short ReadShort()
+		public unsafe int ReadInt()
 		{
-			return (short)this.ReadPacked(2);
-		}
+			int @int;
 
-		public int ReadInt()
-		{
-			return this.ReadPacked(4);
-		}
-
-		public T ReadEnum<T>() where T : struct
-		{
-			var type = typeof(T);
-			var size = Marshal.SizeOf(System.Enum.GetUnderlyingType(type));
-			var value = this.ReadPacked(size).ToString();
-
-			return (T)System.Enum.Parse(type, value);
-		}
-
-		public int[] ReadInt(int count)
-		{
-			return RwBinaryReader.Read(this.ReadInt, count);
-		}
-
-		public bool ReadBoolean(int bytes = 4)
-		{
-			return (this.ReadPacked(bytes) != 0);
-		}
-
-		public float ReadFloat()
-		{
-			var @float = System.BitConverter.ToSingle(this.buffer, this.index);
+			fixed (byte* @byte = &this.buffer[this.index])
+			{
+				@int = *((int*)@byte);
+			}
 
 			this.index += 4;
 
-			return @float;
+			return @int;
 		}
 
+		public bool ReadBoolean()
+		{
+			return this.ReadBoolean(4);
+		}
+
+		public bool ReadBoolean(int size)
+		{
+			var @bool = (this.buffer[this.index] != 0);
+
+			this.index += size;
+
+			return @bool;
+		}
+
+		public unsafe float ReadFloat()
+		{
+			var @int = this.ReadInt();
+
+			return *(float*)&@int;
+		}
+		
+		/// <todo>Refactor</todo>
 		public string ReadString(int count)
 		{
-			return new string(RwBinaryReader.Read(() => (char)this.ReadByte(), count)).TrimEnd((char)0);
-		}
-
-		public static T[] Read<T>(System.Func<T> func, int count)
-		{
-			var result = new T[count];
-
+			var @string = new char[count];
+			var end = false;
+			
 			for (var i = 0; i < count; i++)
 			{
-				result[i] = func();
-			}
+				var @char = (char)this.ReadByte();
 
-			return result;
-		}
-
-		public T[] Read<T>(System.Func<RwBinaryReader, T> func, int count)
-		{
-			return RwBinaryReader.Read(() => func(this), count);
-		}
-
-		public void Consume<T>(System.Func<RwBinaryReader, T> func, System.Action<T> action = null)
-			where T : IRwBinaryStream
-		{
-			while (this.Position < this.Size)
-			{
-				var result = func(this);
-
-				// ReSharper disable once UseNullPropagation
-				if (action != null)
+				if (end)
 				{
-					action.Invoke(result);
+					continue;
 				}
+
+				if (@char == (char)0)
+				{
+					end = true;
+					continue;
+				}
+				
+				@string[i] = @char;
 			}
+			
+			return (new string(@string)).TrimEnd((char)0);
 		}
 
-		public void ConsumeChunk(System.Action<RwChunk> action)
+		public IEnumerable<RwChunk> ConsumeChunk()
 		{
-			while (this.TryReadChunk(out var chunk))
+			while (RwChunk.TryRead(this, out var chunk))
 			{
-				action(chunk);
+				yield return chunk;
 			}
 		}
 
-		public void ConsumeChunk(System.Action<RwBinaryReader, RwChunk> action)
+		public RwBinaryReader ReadInnerChunk(RwChunk chunk)
 		{
-			this.ConsumeChunk((chunk) => action(this, chunk));
-		}
+			var innerStream = this.GetInnerStream(chunk.Size);
+			var innerChunk = innerStream.Read<RwChunk>(RwChunk.SizeOf);
 
-		public void ConsumeInnerChunk(RwChunk chunk, System.Action<RwBinaryReader, RwChunk> action)
-		{
-			this.GetInnerStream(chunk).ConsumeChunk(action);
-		}
-
-		public bool TryReadChunk(out RwChunk chunk)
-		{
-			chunk = default;
-
-			try
-			{
-				chunk = RwChunk.Read(this);
-			}
-			catch
-			{
-				return false;
-			}
-
-			return true;
-		}
-
-		public T Read<T>(RwChunk chunk, System.Func<RwBinaryReader, T> into) where T : IRwBinaryStream
-		{
-			var innerStream = this.GetInnerStream(chunk);
-
-			var @struct = RwChunk.Read(innerStream);
-
-			if (@struct.Type != SectionType.Struct)
+			if (innerChunk.Type != SectionType.Struct)
 			{
 				throw new InvalidDataException();
 			}
 
-			return into(innerStream);
+			return innerStream;
+		}
+
+		public unsafe T[] Read<T>(int count, int size) where T : unmanaged
+		{
+			var result = new T[count];
+
+			if (count == 0)
+			{
+				return result;
+			}
+
+			size *= count;
+
+			fixed (void* src = &this.buffer[this.index], dst = &result[0])
+			{
+				System.Buffer.MemoryCopy(src, dst, size, size);
+			}
+
+			this.index += size;
+
+			return result;
+		}
+
+		public unsafe T Read<T>(int size) where T : unmanaged
+		{
+			var result = new T();
+
+			fixed (void* src = &this.buffer[this.index])
+			{
+				System.Buffer.MemoryCopy(src, &result, size, size);
+			}
+
+			this.index += size;
+
+			return result;
 		}
 
 		public UnityEngine.Vector2 ReadVector2()
 		{
-			return new UnityEngine.Vector2(this.ReadFloat(), this.ReadFloat());
-		}
-
-		public UnityEngine.Vector2[] ReadVector2(int count)
-		{
-			return RwBinaryReader.Read(this.ReadVector2, count);
+			return this.Read<UnityEngine.Vector2>(2 * 4);
 		}
 
 		public UnityEngine.Vector3 ReadVector3()
 		{
-			return new UnityEngine.Vector3(this.ReadFloat(), this.ReadFloat(), this.ReadFloat());
-		}
-
-		public UnityEngine.Vector3[] ReadVector3(int count)
-		{
-			return RwBinaryReader.Read(this.ReadVector3, count);
+			return this.Read<UnityEngine.Vector3>(3 * 4);
 		}
 
 		public UnityEngine.Vector4 ReadVector4()
 		{
-			return new UnityEngine.Vector4(this.ReadFloat(), this.ReadFloat(), this.ReadFloat(), this.ReadFloat());
-		}
-
-		public UnityEngine.Vector4[] ReadVector4(int count)
-		{
-			return RwBinaryReader.Read(this.ReadVector4, count);
+			return this.Read<UnityEngine.Vector4>(4 * 4);
 		}
 
 		public UnityEngine.Quaternion ReadQuaternion()
 		{
-			return new UnityEngine.Quaternion(this.ReadFloat(), this.ReadFloat(), this.ReadFloat(), this.ReadFloat());
-		}
-
-		public UnityEngine.Quaternion[] ReadQuaternion(int count)
-		{
-			return RwBinaryReader.Read(this.ReadQuaternion, count);
+			return this.Read<UnityEngine.Quaternion>(4 * 4);
 		}
 
 		public UnityEngine.Color32 ReadColor()
 		{
-			return new UnityEngine.Color32(this.ReadByte(), this.ReadByte(), this.ReadByte(), this.ReadByte());
-		}
-
-		public UnityEngine.Color32[] ReadColor(int count)
-		{
-			return RwBinaryReader.Read(this.ReadColor, count);
+			return this.Read<UnityEngine.Color32>(4);
 		}
 	}
 

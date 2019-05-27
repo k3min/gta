@@ -13,42 +13,43 @@ namespace RenderWare.Structures
 	{
 		public const string Keyword = "objs";
 		
-		private int id; // 0
+		private int modelId; // 0
 		private string modelName; // 1
 		private string textureName; // 2
 
 		public int MeshCount; // 3
 
 		[MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)]
-		public float[] DrawDistance; // 4
+		public float[] drawDistance; // 4
 
 		private ObjectFlags flags; // 5
 
 		private Dictionary<System.Type, List<IAttachment>> attachments;
 
-		public int Id => this.id;
+		public int ModelId => this.modelId;
 		public string ModelName => this.modelName;
 		public string TextureName => this.textureName;
+		public float DrawDistance => this.drawDistance[0];
 		public ObjectFlags Flags => this.flags;
 
 		public static SimpleObject Read(AsciiReader lr)
 		{
 			var info = new SimpleObject
 			{
-				id = lr.ReadInt(),
+				modelId = lr.ReadInt(),
 				modelName = lr.ReadString(),
 				textureName = lr.ReadString(),
 				MeshCount = lr.ReadInt()
 			};
 
-			info.DrawDistance = new float[info.MeshCount];
+			info.drawDistance = new float[info.MeshCount];
 
 			for (var i = 0; i < info.MeshCount; i++)
 			{
-				info.DrawDistance[i] = lr.ReadFloat();
+				info.drawDistance[i] = lr.ReadFloat();
 			}
 
-			info.flags = lr.ReadEnum<ObjectFlags>();
+			info.flags = (ObjectFlags)lr.ReadInt();
 
 			info.attachments = new Dictionary<System.Type, List<IAttachment>>();
 
@@ -57,14 +58,14 @@ namespace RenderWare.Structures
 
 		public void GetObjectData(SerializationInfo info, StreamingContext context)
 		{
-			info.AddValue("Id", this.id);
+			info.AddValue("ModelId", this.modelId);
 			info.AddValue("ModelName", this.modelName, typeof(string));
 			info.AddValue("TextureName", this.textureName, typeof(string));
 			info.AddValue("MeshCount", this.MeshCount);
 
 			for (var i = 0; i < this.MeshCount; i++)
 			{
-				info.AddValue($"DrawDistance{i}", this.DrawDistance[i]);
+				info.AddValue($"DrawDistance{i}", this.drawDistance[i]);
 			}
 
 			info.AddValue("Flags", this.flags,typeof(int));
@@ -72,16 +73,16 @@ namespace RenderWare.Structures
 
 		public SimpleObject(SerializationInfo info, StreamingContext context)
 		{
-			this.id = info.GetInt32("Id");
+			this.modelId = info.GetInt32("ModelId");
 			this.modelName = info.GetString("ModelName");
 			this.textureName = info.GetString("TextureName");
 			this.MeshCount = info.GetInt32("MeshCount");
 
-			this.DrawDistance = new float[this.MeshCount];
+			this.drawDistance = new float[this.MeshCount];
 
 			for (var i = 0; i < this.MeshCount; i++)
 			{
-				this.DrawDistance[i] = info.GetSingle($"DrawDistance{i}");
+				this.drawDistance[i] = info.GetSingle($"DrawDistance{i}");
 			}
 
 			this.flags = info.GetEnum<ObjectFlags>("Flags",typeof(int));

@@ -23,7 +23,7 @@ namespace RenderWare.Structures
 
 			var geometryIndex = 0;
 
-			reader.ConsumeChunk((chunk) =>
+			foreach (var chunk in reader.ConsumeChunk())
 			{
 				switch (chunk.Type)
 				{
@@ -31,13 +31,13 @@ namespace RenderWare.Structures
 					{
 						if (geometryIndex < geometryList.GeometryCount)
 						{
-							geometryList.Geometries[geometryIndex++] = reader.Read(chunk, RpGeometry.Read);
+							geometryList.Geometries[geometryIndex++] = RpGeometry.Read(reader.ReadInnerChunk(chunk));
 						}
 
 						break;
 					}
 				}
-			});
+			}
 
 			return geometryList;
 		}

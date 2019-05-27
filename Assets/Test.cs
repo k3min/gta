@@ -6,6 +6,7 @@ using RenderWare.Loaders;
 using RenderWare.Structures;
 using RenderWare.Types;
 using UnityEngine;
+using Collision = RenderWare.Loaders.Collision;
 
 public class Test : MonoBehaviour
 {
@@ -26,14 +27,12 @@ public class Test : MonoBehaviour
 
 		FileSystem.BasePath = this.BasePath;
 
-		Archive.Excluded.Add("lod");
-
-		Archive.OnLoad += (img, entry) => this.load = $"{img.FilePath}: {entry.Name.ToLower()}";
+		Archive.OnLoad += (img, x) => this.load = $"{img.FilePath}: {x}";
 		TextureArchive.OnLoad += (x) => this.load = x.ToLower();
 		Model.OnLoad += (x) => this.load = x.ToLower();
+		Collision.OnLoad += (x) => this.load = x.ToLower();
 
 		Text.Load("text/american.gxt");
-
 		Archive.Load("models/gta3.img");
 
 		await MapListing.Load("data/default.dat");
@@ -41,74 +40,108 @@ public class Test : MonoBehaviour
 
 		//await this.ProcessMaterials();
 
-		await ItemPlacement.ForEach<Instance>(async (inst) =>
+		foreach (var inst in ItemPlacement.All<Instance>())
 		{
-			if (inst.ModelName.ToLower().Contains("lod"))
-			{
-				return;
-			}
-
 			var ide = ItemDefinition.Get<IAttachableObject>(inst);
 
 			if ((ide.Flags & ObjectFlags.Shadows) == ObjectFlags.Shadows)
 			{
-				return;
+				continue;
 			}
 
-			var go = new GameObject(inst.ModelName)
+			var go = new GameObject(inst.ModelName.ToLower())
 			{
 				hideFlags = HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild
 			};
-
-			this.gameObjects.Add(go);
 
 			go.transform.localPosition = inst.Position.xzy();
 			go.transform.localRotation = inst.Rotation.xzyw();
 			go.transform.localScale = inst.Scale;
 
+			this.gameObjects.Add(go);
+
 			var model = await Model.Find(ide.ModelName);
 
-			for (var i = 0; i < model.AtomicCount; i++)
+			if (model.AtomicCount == 0)
 			{
-				var atomic = model.Atomics[i];
+				continue;
+			}
 
-				var frameList = model.FrameList;
+			var atomic = model.Atomics[model.AtomicCount-1];
 
-				var frame = frameList.Frames[atomic.FrameIndex];
-				var geometry = model.GeometryList.Geometries[atomic.GeometryIndex];
-				var binMesh = geometry.BinMesh;
+			var frameList = model.FrameList;
 
-				var child = new GameObject(frame.Name)
+			var frameName = frameList.FrameNames[atomic.FrameIndex];
+			var geometry = model.GeometryList.Geometries[atomic.GeometryIndex];
+			var binMesh = geometry.BinMesh;
+
+			var child = new GameObject(frameName)
+			{
+				hideFlags = HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild,
+			};
+
+			child.transform.parent = go.transform;
+
+			child.transform.localPosition = Vector3.zero;
+			child.transform.localRotation = Quaternion.identity;
+
+			this.gameObjects.Add(child);
+
+			if (Collision.TryFind(ide, out var coll))
+			{
+				if (coll.BoxCount != 0)
 				{
-					hideFlags = HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild
-				};
-
-				this.gameObjects.Add(child);
-
-				child.transform.parent = go.transform;
-
-				child.transform.localPosition = Vector3.zero;
-				child.transform.localRotation = Quaternion.identity;
-
-				var meshFilter = child.AddComponent<MeshFilter>();
-
-				meshFilter.sharedMesh = geometry.Mesh;
-
-				var meshRenderer = child.AddComponent<MeshRenderer>();
-
-				var sharedMaterials = new Material[binMesh.MeshCount];
-
-				for (var j = 0; j < binMesh.MeshCount; j++)
-				{
-					var index = binMesh.Meshes[j].MaterialIndex;
-
-					sharedMaterials[index] = this.material;
-					//sharedMaterials[index] = this.materials[ide.ModelName.ToLower()][atomic.GeometryIndex][index];
+					foreach (var box in coll.Boxes)
+					{
+						var boxCollider = child.AddComponent<BoxCollider>();
+						boxCollider.center = box.Center;
+						boxCollider.size = box.Size;
+					}
 				}
 
-				meshRenderer.sharedMaterials = sharedMaterials;
+				if (coll.SphereCount != 0)
+				{
+					foreach (var sphere in coll.Spheres)
+					{
+						var sphereCollider = child.AddComponent<SphereCollider>();
+						sphereCollider.radius = sphere.Radius;
+						sphereCollider.center = sphere.Center.xzy();
+					}
+				}
+				
+				if (coll.Mesh != null)
+				{
+					var meshCollider = child.AddComponent<MeshCollider>();
+					meshCollider.sharedMesh = coll.Mesh;
+				}
 			}
-		});
+
+			var meshFilter = child.AddComponent<MeshFilter>();
+
+			meshFilter.sharedMesh = geometry.Mesh;
+
+			var meshRenderer = child.AddComponent<MeshRenderer>();
+
+			meshRenderer.motionVectorGenerationMode = MotionVectorGenerationMode.Camera;
+
+			var sharedMaterials = new Material[binMesh.MeshCount];
+
+			for (var j = 0; j < binMesh.MeshCount; j++)
+			{
+				var index = binMesh.Meshes[j].MaterialIndex;
+
+				sharedMaterials[index] = this.material;
+				//sharedMaterials[index] = this.materials[ide.ModelName.ToLower()][atomic.GeometryIndex][index];
+			}
+
+			meshRenderer.sharedMaterials = sharedMaterials;
+
+			var drawDistance = go.AddComponent<DrawDistance>();
+
+			drawDistance.Max = ide.DrawDistance;
+
+			DrawDistance.FindParent(drawDistance);
+		}
 	}
 
 	/// <todo>Optimize this</todo>
@@ -177,7 +210,7 @@ public class Test : MonoBehaviour
 		var color = Gizmos.color;
 
 		Gizmos.color = new Color(1f, 0.5f, 0.5f, 0.5f);
-		ItemPlacement.ForEach<Zone>((zone) =>
+		foreach (var zone in ItemPlacement.All<Zone>())
 		{
 			var min = zone.Min.xzy();
 			var max = zone.Max.xzy();
@@ -193,10 +226,10 @@ public class Test : MonoBehaviour
 				UnityEditor.Handles.Label(center, zoneName);
 			}
 #endif
-		});
+		}
 
 		Gizmos.color = new Color(0.5f, 1f, 0.5f, 0.5f);
-		ItemPlacement.ForEach<Cull>((cull) =>
+		foreach (var cull in ItemPlacement.All<Cull>())
 		{
 			var min = cull.Min.xzy();
 			var max = cull.Max.xzy();
@@ -206,7 +239,7 @@ public class Test : MonoBehaviour
 
 			Gizmos.DrawSphere(center, 1f);
 			Gizmos.DrawWireCube(center, extents * 2f);
-		});
+		}
 
 		Gizmos.color = color;
 	}

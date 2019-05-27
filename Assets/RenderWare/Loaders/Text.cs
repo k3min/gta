@@ -14,43 +14,43 @@ namespace RenderWare.Loaders
 		{
 			return Text.entries.TryGetValue(key.ToLower(), out value);
 		}
-		
+
 		public static void Load(string filePath)
 		{
 			var sb = new StringBuilder();
 
-			using (var ms = File.OpenRead(FileSystem.GetPath(filePath)))
+			var buffer = File.ReadAllBytes(FileSystem.GetPath(filePath));
+
+			using (var ms = new MemoryStream(buffer))
 			using (var br = new BinaryReader(ms, Encoding.Unicode))
 			{
-				var magic = br.ReadString(4);
+				var reader = new RwBinaryReader(buffer);
 
-				if (magic != TKey.Magic)
+				var magic = reader.ReadString(4);
+
+				if (!magic.EqualsCaseIgnore(TKey.Magic))
 				{
 					throw new InvalidDataException();
 				}
 
-				var size = br.ReadInt32();
+				var size = reader.ReadInt();
 
 				for (var i = 0; i < size / TKey.SizeOf; i++)
 				{
-					var offset = br.ReadInt32();
-					var key = br.ReadString(8);
+					var offset = reader.ReadInt();
+					var key = reader.ReadString(8);
 
-					br.Mark((reader) =>
+					br.BaseStream.Seek(offset + size + 8 + 8, SeekOrigin.Begin);
+
+					sb.Clear();
+
+					char @char;
+					while ((@char = br.ReadChar()) != (char)0)
 					{
-						reader.BaseStream.Seek(offset + size + 8 + 8, SeekOrigin.Begin);
+						sb.Append(@char);
+					}
 
-						sb.Clear();
-
-						char value;
-
-						while ((value = reader.ReadChar()) != '\0')
-						{
-							sb.Append(value);
-						}
-
-						Text.entries.Add(key.ToLower(), sb.ToString());
-					});
+					Text.entries.Add(key.ToLower(), sb.ToString());
 				}
 			}
 		}

@@ -24,7 +24,7 @@ namespace RenderWare.Structures
 
 			var textureIndex = 0;
 
-			reader.ConsumeChunk((chunk) =>
+			foreach (var chunk in reader.ConsumeChunk())
 			{
 				switch (chunk.Type)
 				{
@@ -32,13 +32,13 @@ namespace RenderWare.Structures
 					{
 						if (textureIndex < textureDictionary.TextureCount)
 						{
-							textureDictionary.Textures[textureIndex++] = reader.Read(chunk, RwTextureNative.Read);
+							textureDictionary.Textures[textureIndex++] = RwTextureNative.Read(reader.ReadInnerChunk(chunk));
 						}
 
 						break;
 					}
 				}
-			});
+			}
 
 			return textureDictionary;
 		}

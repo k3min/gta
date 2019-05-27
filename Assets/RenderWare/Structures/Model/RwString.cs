@@ -18,7 +18,7 @@ namespace RenderWare.Structures
 		{
 			var @string = new RwString
 			{
-				Type = reader.ReadEnum<SectionType>(),
+				Type = (SectionType)reader.ReadInt(),
 				Size = reader.ReadInt(),
 				Version = reader.ReadInt()
 			};

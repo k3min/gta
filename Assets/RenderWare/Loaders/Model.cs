@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using RenderWare.Structures;
-using RenderWare.Types;
 using Path = System.IO.Path;
 
 namespace RenderWare.Loaders
@@ -23,7 +22,18 @@ namespace RenderWare.Loaders
 			}
 		}
 
-		public static async Task Load(string filePath)
+		private static RwClump Read(string name, RwBinaryReader stream)
+		{
+			name = Path.GetFileNameWithoutExtension(name).ToLower();
+
+			var dff = RwClump.Read(stream.ReadInnerChunk(stream.Read<RwChunk>(RwChunk.SizeOf)));
+			
+			Model.models.Add(name, dff);
+
+			return dff;
+		}
+
+		public static async Task<RwClump> Load(string filePath)
 		{
 			await Task.Run(() =>
 			{
@@ -33,24 +43,7 @@ namespace RenderWare.Loaders
 				}
 			});
 
-			RwBinaryReader.LoadChunk(filePath, (stream, chunk) =>
-			{
-				switch (chunk.Type)
-				{
-					case SectionType.TextureDictionary:
-						Model.Add(filePath, stream.Read(chunk, RwClump.Read));
-						break;
-				}
-			});
-		}
-
-		public static RwClump Add(string name, RwClump dff)
-		{
-			name = Path.GetFileNameWithoutExtension(name).ToLower();
-
-			Model.models.Add(name, dff);
-
-			return dff;
+			return Model.Read(filePath, RwBinaryReader.Load(filePath));
 		}
 
 		public static async Task<RwClump> Find(string name)
@@ -64,17 +57,14 @@ namespace RenderWare.Loaders
 
 			name = Path.ChangeExtension(name, "dff");
 
-			var found = await Archive.TryFind(name, (dff) =>
-			{
-				result = (RwClump)dff;
-			});
+			var stream = await Archive.TryFind(name);
 
-			if (found)
+			if (stream == null)
 			{
-				return result;
+				throw new FileNotFoundException(name);
 			}
 
-			throw new FileNotFoundException(name);
+			return Model.Read(name, stream);
 		}
 	}
 }

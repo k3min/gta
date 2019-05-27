@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using RenderWare.Extensions;
 using RenderWare.Structures;
 using RenderWare.Types;
 using Path = System.IO.Path;
@@ -12,10 +13,10 @@ namespace RenderWare.Loaders
 
 		private static readonly Dictionary<string, RwTextureDictionary> textures =
 			new Dictionary<string, RwTextureDictionary>();
-		
+
 		public static event System.Action<string> OnLoad;
 
-		public static async Task Load(string filePath)
+		public static async Task<RwTextureDictionary> Load(string filePath)
 		{
 			await Task.Run(() =>
 			{
@@ -24,25 +25,16 @@ namespace RenderWare.Loaders
 					TextureArchive.OnLoad(filePath);
 				}
 			});
-			
-			RwBinaryReader.LoadChunk(filePath, (stream, chunk) =>
-			{
-				switch (chunk.Type)
-				{
-					case SectionType.TextureDictionary:
-						TextureArchive.Add(filePath, stream.Read(chunk, RwTextureDictionary.Read));
-						break;
 
-					default:
-						throw new System.NotSupportedException();
-				}
-			});
+			return TextureArchive.Add(filePath, RwBinaryReader.Load(filePath));
 		}
 
-		public static RwTextureDictionary Add(string name, RwTextureDictionary txd)
+		private static RwTextureDictionary Add(string name, RwBinaryReader stream)
 		{
 			name = Path.GetFileNameWithoutExtension(name).ToLower();
 
+			var txd = RwTextureDictionary.Read(stream.ReadInnerChunk(stream.Read<RwChunk>(RwChunk.SizeOf)));
+			
 			TextureArchive.textures.Add(name, txd);
 
 			return txd;
@@ -51,7 +43,7 @@ namespace RenderWare.Loaders
 		public static bool TryFindTexture(string name, out RwTextureNative result)
 		{
 			name = name.ToLower();
-			
+
 			result = default;
 
 			foreach (var texture in TextureArchive.textures.Values)
@@ -60,7 +52,7 @@ namespace RenderWare.Loaders
 				{
 					result = texture.Textures[i];
 
-					if (result.Texture.Name.ToLower() == name)
+					if (result.Texture.Name.EqualsCaseIgnore(name))
 					{
 						return true;
 					}

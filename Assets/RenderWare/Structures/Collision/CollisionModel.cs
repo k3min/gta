@@ -1,11 +1,12 @@
 using System.IO;
 using System.Runtime.InteropServices;
+using RenderWare.Extensions;
 using RenderWare.Loaders;
 
 namespace RenderWare.Structures
 {
 	[StructLayout(LayoutKind.Sequential)]
-	public struct CollisionModel : IRwBinaryStream
+	public struct CollisionModel : IRwBinaryStream, System.IDisposable
 	{
 		public const string COLL = "COLL";
 
@@ -15,9 +16,10 @@ namespace RenderWare.Structures
 		public int Size; // 1
 
 		[MarshalAs(UnmanagedType.LPStr, SizeConst = 22)]
-		public string Name; // 2
+		public string ModelName; // 2
 
-		public short ModelIndex; // 3
+		public short ModelId;
+
 		public TBounds Bounds; // 4
 
 		public int SphereCount; // 5
@@ -41,11 +43,13 @@ namespace RenderWare.Structures
 		[MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 12)]
 		public TFace[] Faces; // 13
 
+		[System.NonSerialized] public UnityEngine.Mesh Mesh;
+
 		public static CollisionModel Read(RwBinaryReader ar)
 		{
 			var magic = ar.ReadString(4);
 
-			if (magic != CollisionModel.COLL)
+			if (!magic.EqualsCaseIgnore(CollisionModel.COLL))
 			{
 				throw new InvalidDataException();
 			}
@@ -55,26 +59,72 @@ namespace RenderWare.Structures
 			{
 				Magic = CollisionModel.COLL,
 				Size = ar.ReadInt(),
-				Name = ar.ReadString(22),
-				ModelIndex = ar.ReadShort(),
-				Bounds = TBounds.Read(ar)
+				ModelName = ar.ReadString(22),
+				ModelId=ar.ReadShort(),
+				Bounds = ar.Read<TBounds>(TBounds.SizeOf)
 			};
 
 			coll.SphereCount = ar.ReadInt();
-			coll.Spheres = ar.Read(TSphere.Read, coll.SphereCount);
+			coll.Spheres = ar.Read<TSphere>(coll.SphereCount, TSphere.SizeOf);
 
 			coll.Unknown = ar.ReadInt();
 
 			coll.BoxCount = ar.ReadInt();
-			coll.Boxes = ar.Read(TBox.Read, coll.BoxCount);
+			coll.Boxes = ar.Read<TBox>(coll.BoxCount, TBox.SizeOf);
 
 			coll.VertexCount = ar.ReadInt();
-			coll.Vertices = ar.ReadVector3(coll.VertexCount);
+			coll.Vertices = ar.Read<UnityEngine.Vector3>(coll.VertexCount, 3 * 4);
 
 			coll.FaceCount = ar.ReadInt();
-			coll.Faces = ar.Read(TFace.Read, coll.FaceCount);
+			coll.Faces = ar.Read<TFace>(coll.FaceCount, TFace.SizeOf);
+
+			if (coll.VertexCount != 0)
+			{
+				coll.CreateMesh();
+			}
 
 			return coll;
+		}
+
+		private void CreateMesh()
+		{
+			var vertices = new UnityEngine.Vector3[this.VertexCount];
+
+			for (var i = 0; i < this.VertexCount; i++)
+			{
+				vertices[i] = this.Vertices[i].xzy();
+			}
+			
+			this.Mesh = new UnityEngine.Mesh
+			{
+				hideFlags = UnityEngine.HideFlags.DontSaveInEditor | UnityEngine.HideFlags.DontSaveInBuild,
+				vertices = vertices
+			};
+
+			var indices = new int[this.FaceCount * 3];
+
+			unsafe
+			{
+				for (var i = 0; i < this.FaceCount; i++)
+				{
+					for (var j = 0; j < 3; j++)
+					{
+						indices[(i * 3) + j] = this.Faces[i].Triangle[j];
+					}
+				}
+			}
+			
+			this.Mesh.SetIndices(indices, UnityEngine.MeshTopology.Triangles, 0, true);
+			this.Mesh.UploadMeshData(true);
+		}
+
+		public void Dispose()
+		{
+			if (this.Mesh != null)
+			{
+				UnityEngine.Object.DestroyImmediate(this.Mesh);
+				this.Mesh = null;
+			}
 		}
 	}
 }

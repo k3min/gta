@@ -22,7 +22,7 @@ namespace RenderWare.Structures
 		{
 			return new PathNode
 			{
-				Type = lr.ReadEnum<PathNodeType>(),
+				Type = (PathNodeType)lr.ReadInt(),
 				NextNode = lr.ReadInt(),
 				IsCrossRoad = lr.ReadBoolean(),
 				Center = lr.ReadVector3(),

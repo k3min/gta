@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using RenderWare.Structures;
 using RenderWare.Types;
 
@@ -8,30 +9,65 @@ namespace RenderWare.Loaders
 	{
 		public const string Keyword = "COLFILE";
 
-		private static readonly Dictionary<ZoneType, Dictionary<int, List<CollisionModel>>> collisions =
-			new Dictionary<ZoneType, Dictionary<int, List<CollisionModel>>>
+		private static readonly Dictionary<ZoneType, Dictionary<string, CollisionModel>> collisions =
+			new Dictionary<ZoneType, Dictionary<string, CollisionModel>>
 			{
-				{ZoneType.None, new Dictionary<int, List<CollisionModel>>()}, // World
-				{ZoneType.Portland, new Dictionary<int, List<CollisionModel>>()}, // Portland
-				{ZoneType.Staunton, new Dictionary<int, List<CollisionModel>>()}, // Staunton
-				{ZoneType.ShoresideVale, new Dictionary<int, List<CollisionModel>>()} // Shoreside Vale
+				{ZoneType.None, new Dictionary<string, CollisionModel>()}, // World
+				{ZoneType.Portland, new Dictionary<string, CollisionModel>()}, // Portland
+				{ZoneType.Staunton, new Dictionary<string, CollisionModel>()}, // Staunton
+				{ZoneType.ShoresideVale, new Dictionary<string, CollisionModel>()} // Shoreside Vale
 			};
 
-		public static void Load(ZoneType zone, string filePath)
+		public static event System.Action<string> OnLoad;
+
+		public static async Task Load(ZoneType zone, string filePath)
 		{
-			RwBinaryReader.Load(filePath).Consume(CollisionModel.Read, (coll) => Collision.Add(zone, coll));
+			await Task.Run(() =>
+			{
+				if (Collision.OnLoad != null)
+				{
+					Collision.OnLoad(filePath);
+				}
+			});
+
+			var stream = RwBinaryReader.Load(filePath);
+
+			while (stream.Position < stream.Size)
+			{
+				Collision.Add(zone, CollisionModel.Read(stream));
+			}
 		}
 
-		public static void Add(ZoneType zone, CollisionModel coll)
+		private static void Add(ZoneType zone, CollisionModel coll)
 		{
-			var collision = Collision.collisions[zone];
+			Collision.collisions[zone].Add(coll.ModelName.ToLower(), coll);
+		}
 
-			if (!collision.ContainsKey(coll.ModelIndex))
+		public static bool TryFind(IItemDefinition ide, out CollisionModel coll)
+		{
+			coll = default;
+
+			foreach (var zones in Collision.collisions.Values)
 			{
-				collision[coll.ModelIndex] = new List<CollisionModel>();
+				if (zones.TryGetValue(ide.ModelName, out coll))
+				{
+					return true;
+				}
+
+				foreach (var zone in zones.Values)
+				{
+					if (zone.ModelId != ide.ModelId)
+					{
+						continue;
+					}
+
+					coll = zone;
+
+					return true;
+				}
 			}
 
-			collision[coll.ModelIndex].Add(coll);
+			return false;
 		}
 	}
 }

@@ -1,25 +1,21 @@
 using System.Runtime.InteropServices;
-using RenderWare.Loaders;
+using RenderWare.Extensions;
 
 namespace RenderWare.Structures
 {
 	[StructLayout(LayoutKind.Sequential)]
 	public struct TBounds
 	{
-		public float Radius;
-		public UnityEngine.Vector3 Center;
-		public UnityEngine.Vector3 Min;
-		public UnityEngine.Vector3 Max;
+		public const int SizeOf = 4 + (3 * 4) + (3 * 4) + (3 * 4);
+		
+		public float SphereRadius;
+		public UnityEngine.Vector3 SphereCenter;
 
-		public static TBounds Read(RwBinaryReader br)
-		{
-			return new TBounds
-			{
-				Radius = br.ReadFloat(),
-				Center = br.ReadVector3(),
-				Min = br.ReadVector3(),
-				Max = br.ReadVector3()
-			};
-		}
+		public UnityEngine.Vector3 BoxMin;
+		public UnityEngine.Vector3 BoxMax;
+		
+		public UnityEngine.Vector3 BoxCenter => this.BoxMin.xzy() + this.BoxExtents;
+		public UnityEngine.Vector3 BoxExtents => (this.BoxMax.xzy() - this.BoxMin.xzy()) * 0.5f;
+		public UnityEngine.Vector3 BoxSize => this.BoxExtents * 2f;
 	}
 }

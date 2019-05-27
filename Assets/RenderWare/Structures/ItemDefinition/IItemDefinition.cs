@@ -2,7 +2,7 @@ namespace RenderWare.Structures
 {
 	public interface IItemDefinition
 	{
-		int Id { get; }
+		int ModelId { get; }
 		string ModelName { get; }
 		string TextureName { get; }
 	}

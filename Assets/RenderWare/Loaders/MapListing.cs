@@ -30,7 +30,7 @@ namespace RenderWare.Loaders
 						break;
 
 					case Collision.Keyword:
-						Collision.Load(lr.ReadEnum<ZoneType>(), lr.ReadString());
+						await Collision.Load((ZoneType)lr.ReadInt(), lr.ReadString());
 						break;
 
 					case ItemPlacement.Keyword:

@@ -1,19 +1,35 @@
+using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
-using RenderWare.Extensions;
+using System.Text;
 using RenderWare.Loaders;
 
 namespace RenderWare.Structures
 {
 	public class ImgArchive
 	{
-		public readonly DirectoryEntry[] DirFileEntries;
-
+		private readonly DirectoryEntry[] dirFileEntries;
 		private readonly byte[] imgFileBuffer;
 
 		public readonly int FileCount;
-
 		public readonly string FilePath;
+
+		public IEnumerable<DirectoryEntry> DirectoryEntries
+		{
+			get
+			{
+				for (var i = 0; i < this.FileCount; i++)
+				{
+					var entry = this.dirFileEntries[i];
+
+					if (entry.Size == 0)
+					{
+						continue;
+					}
+
+					yield return entry;
+				}
+			}
+		}
 
 		public ImgArchive(string filePath)
 		{
@@ -25,40 +41,27 @@ namespace RenderWare.Structures
 			var imgFilePath = System.IO.Path.ChangeExtension(filePath, "img");
 
 			using (var fs = File.OpenRead(dirFilePath))
-			using (var br = new BinaryReader(fs))
+			using (var br = new BinaryReader(fs, Encoding.ASCII))
 			{
 				this.FileCount = (int)fs.Length / DirectoryEntry.SizeOf;
-				this.DirFileEntries = new DirectoryEntry[this.FileCount];
+				this.dirFileEntries = new DirectoryEntry[this.FileCount];
 
 				for (var index = 0; index < this.FileCount; index++)
 				{
-					this.DirFileEntries[index] = br.ReadDirectoryEntry();
+					this.dirFileEntries[index] = DirectoryEntry.Read(br);
 				}
 			}
 
 			this.imgFileBuffer = File.ReadAllBytes(imgFilePath);
 		}
 
-		public async Task<bool> TryFind(string name,
-			System.Func<DirectoryEntry, RwBinaryReader, RwChunk, Task> action)
+		public RwBinaryReader GetStream(DirectoryEntry entry)
 		{
-			for (var i = 0; i < this.FileCount; i++)
-			{
-				var entry = this.DirFileEntries[i];
-
-				if (entry.Size == 0 || entry.Name.ToLower() != name)
-				{
-					continue;
-				}
-
-				var stream = new RwBinaryReader(this.imgFileBuffer, entry.Offset, entry.Size);
-
-				await action(entry, stream, RwChunk.Read(stream));
-
-				return true;
-			}
-
-			return false;
+			return new RwBinaryReader(
+				this.imgFileBuffer,
+				entry.Offset * DirectoryEntry.Padding,
+				entry.Size * DirectoryEntry.Padding
+			);
 		}
 	}
 }

@@ -12,7 +12,7 @@ namespace RenderWare.Structures
 	{
 		public const string Keyword = "cars";
 
-		private int id;
+		private int modelId;
 		private string modelName;
 		private string textureName;
 
@@ -31,7 +31,7 @@ namespace RenderWare.Structures
 		// Plane
 		public int LodModelId;
 
-		public int Id => this.id;
+		public int ModelId => this.modelId;
 		public string ModelName => this.modelName;
 		public string TextureName => this.textureName;
 
@@ -102,7 +102,7 @@ namespace RenderWare.Structures
 		{
 			var info = new VehicleObject
 			{
-				id = lr.ReadInt(),
+				modelId = lr.ReadInt(),
 				modelName = lr.ReadString(),
 				textureName = lr.ReadString(),
 				type = lr.ReadString(),
@@ -131,7 +131,7 @@ namespace RenderWare.Structures
 
 		public void GetObjectData(SerializationInfo info, StreamingContext context)
 		{
-			info.AddValue("Id", this.id);
+			info.AddValue("ModelId", this.modelId);
 			info.AddValue("ModelName", this.modelName, typeof(string));
 			info.AddValue("TextureName", this.textureName, typeof(string));
 			info.AddValue("Type", this.type, typeof(string));
@@ -157,7 +157,7 @@ namespace RenderWare.Structures
 
 		public VehicleObject(SerializationInfo info, StreamingContext context)
 		{
-			this.id = info.GetInt32("Id");
+			this.modelId = info.GetInt32("ModelId");
 			this.modelName = info.GetString("ModelName");
 			this.textureName = info.GetString("TextureName");
 			this.type = info.GetString("Type");

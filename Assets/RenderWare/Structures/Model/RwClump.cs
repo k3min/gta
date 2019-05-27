@@ -25,29 +25,29 @@ namespace RenderWare.Structures
 
 			var atomicIndex = 0;
 
-			reader.ConsumeChunk((chunk) =>
+			foreach (var chunk in reader.ConsumeChunk())
 			{
 				switch (chunk.Type)
 				{
 					case SectionType.FrameList:
-						clump.FrameList = reader.Read(chunk, RwFrameList.Read);
+						clump.FrameList = RwFrameList.Read(reader.ReadInnerChunk(chunk));
 						break;
 
 					case SectionType.GeometryList:
-						clump.GeometryList = reader.Read(chunk, RwGeometryList.Read);
+						clump.GeometryList = RwGeometryList.Read(reader.ReadInnerChunk(chunk));
 						break;
 
 					case SectionType.Atomic:
 					{
 						if (atomicIndex < clump.AtomicCount)
 						{
-							clump.Atomics[atomicIndex++] = reader.Read(chunk, RwAtomic.Read);
+							clump.Atomics[atomicIndex++] = reader.ReadInnerChunk(chunk).Read<RwAtomic>(RwAtomic.SizeOf);
 						}
 
 						break;
 					}
 				}
-			});
+			}
 			
 			return clump;
 		}

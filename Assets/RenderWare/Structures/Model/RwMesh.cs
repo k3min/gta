@@ -8,6 +8,7 @@ namespace RenderWare.Structures
 	{
 		public int IndexCount; // 0
 		public int MaterialIndex; // 1
+
 		[MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)]
 		public int[] Indices; // 2
 
@@ -19,7 +20,7 @@ namespace RenderWare.Structures
 				MaterialIndex = reader.ReadInt()
 			};
 
-			mesh.Indices = reader.ReadInt(mesh.IndexCount);
+			mesh.Indices = reader.Read<int>(mesh.IndexCount, 4);
 
 			return mesh;
 		}

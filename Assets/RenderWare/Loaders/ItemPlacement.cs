@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using RenderWare.Extensions;
 using RenderWare.Structures;
 using RenderWare.Types;
 
@@ -18,24 +19,19 @@ namespace RenderWare.Loaders
 			{typeof(Pickup), new List<IItemPlacement>()}
 		};
 
-		public static void Add<T>(T instance) where T : IItemPlacement
+		private static void Add<T>(T instance) where T : IItemPlacement
 		{
 			ItemPlacement.items[typeof(T)].Add(instance);
 		}
 		
-		public static void ForEach<T>(System.Action<T> action) where T : IItemPlacement
+		public static IEnumerable<T> All<T>() where T : IItemPlacement
 		{
-			foreach (var item in ItemPlacement.items[typeof(T)])
-			{
-				action((T)item);
-			}
-		}
+			var type = typeof(T);
+			var results = ItemPlacement.items[type];
 
-		public static async Task ForEach<T>(System.Func<T, Task> action) where T : IItemPlacement
-		{
-			foreach (var item in ItemPlacement.items[typeof(T)])
+			foreach (var item in results)
 			{
-				await action((T)item);
+				yield return (T)item;
 			}
 		}
 
@@ -66,7 +62,7 @@ namespace RenderWare.Loaders
 
 			AsciiReader.Read(filePath, (sr, line) =>
 			{
-				if (line.ToLower() == ItemPlacement.End)
+				if (line.EqualsCaseIgnore(ItemPlacement.End))
 				{
 					section = IplSection.None;
 				}

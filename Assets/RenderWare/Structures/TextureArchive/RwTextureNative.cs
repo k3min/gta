@@ -17,8 +17,7 @@ namespace RenderWare.Structures
 		public UnityEngine.Color32[] Pixels;
 		public byte[] Data;
 
-		[System.NonSerialized]
-		public UnityEngine.Texture2D Texture2D;
+		[System.NonSerialized] public UnityEngine.Texture2D Texture2D;
 
 		public static RwTextureNative Read(RwBinaryReader reader)
 		{
@@ -32,33 +31,36 @@ namespace RenderWare.Structures
 
 			if (pal8)
 			{
-				texture.Palette = reader.ReadColor(256);
+				texture.Palette = reader.Read<UnityEngine.Color32>(256,4);
 
 				var size = reader.ReadInt();
-
-				texture.Pixels = RwBinaryReader.Read(() => texture.Palette[reader.ReadByte()], size);
+				texture.Pixels = new UnityEngine.Color32[size];
+				for (var i = 0; i < size; i++)
+				{
+					texture.Pixels[i] = texture.Palette[reader.ReadByte()];
+				}
 			}
 			else
 			{
-					var size = reader.ReadInt();
+				var size = reader.ReadInt();
 
-					texture.Data = new byte[size];
+				texture.Data = new byte[size];
 
-					reader.BlockCopy(texture.Data, 0, size);
+				reader.BlockCopy(texture.Data, 0, size);
 
-					for (var i = 1; i < texture.Raster.MipMapCount; i++)
+				for (var i = 1; i < texture.Raster.MipMapCount; i++)
+				{
+					size = reader.ReadInt();
+
+					if (size == 0)
 					{
-						size = reader.ReadInt();
-
-						if (size == 0)
-						{
-							continue;
-						}
-
-						System.Array.Resize(ref texture.Data, texture.Data.Length + size);
-
-						reader.BlockCopy(texture.Data, texture.Data.Length - size, size);
+						continue;
 					}
+
+					System.Array.Resize(ref texture.Data, texture.Data.Length + size);
+
+					reader.BlockCopy(texture.Data, texture.Data.Length - size, size);
+				}
 			}
 
 			try
@@ -116,7 +118,8 @@ namespace RenderWare.Structures
 						$"{this.Texture.Name}: Unsupported filtering '{this.Texture.FilterMode}'!");
 			}
 
-			this.Texture2D = new UnityEngine.Texture2D(this.Raster.Width, this.Raster.Height, textureFormat, (this.Raster.Flags & Types.RasterFormat.Mipmaps) == Types.RasterFormat.Mipmaps)
+			this.Texture2D = new UnityEngine.Texture2D(this.Raster.Width, this.Raster.Height, textureFormat,
+				(this.Raster.Flags & Types.RasterFormat.Mipmaps) == Types.RasterFormat.Mipmaps)
 			{
 				name = this.Texture.Name,
 				filterMode = filterMode,
@@ -131,7 +134,7 @@ namespace RenderWare.Structures
 				{
 					colors[i] = this.Pixels[i];
 				}
-				
+
 				this.Texture2D.SetPixels(colors);
 			}
 			else
@@ -139,7 +142,8 @@ namespace RenderWare.Structures
 				this.Texture2D.LoadRawTextureData(this.Data);
 			}
 
-			this.Texture2D.Apply((this.Raster.Flags & Types.RasterFormat.AutoMipmaps) == Types.RasterFormat.AutoMipmaps, true);
+			this.Texture2D.Apply((this.Raster.Flags & Types.RasterFormat.AutoMipmaps) == Types.RasterFormat.AutoMipmaps,
+				true);
 		}
 
 		public void Dispose()
@@ -169,9 +173,9 @@ namespace RenderWare.Structures
 			{
 				return new TextureFormat
 				{
-					PlatformId = reader.ReadEnum<PlatformId>(),
-					FilterMode = reader.ReadEnum<FilterMode>(),
-					Wrap = reader.ReadEnum<AddressingMode>(),
+					PlatformId = (PlatformId)reader.ReadInt(),
+					FilterMode = (FilterMode)reader.ReadByte(),
+					Wrap = (AddressingMode)reader.ReadByte(),
 					Padding = reader.ReadShort(),
 					Name = reader.ReadString(32),
 					AlphaName = reader.ReadString(32)
@@ -196,7 +200,7 @@ namespace RenderWare.Structures
 			{
 				return new RasterFormat
 				{
-					Flags = reader.ReadEnum<Types.RasterFormat>(),
+					Flags = (Types.RasterFormat)reader.ReadInt(),
 					HasAlpha = reader.ReadBoolean(),
 					Width = reader.ReadShort(),
 					Height = reader.ReadShort(),

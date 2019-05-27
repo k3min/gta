@@ -7,26 +7,24 @@ namespace RenderWare.Structures
 	[StructLayout(LayoutKind.Sequential)]
 	public struct DirectoryEntry
 	{
-		public const int SizeOf = 32;
-		
+		public const int NameLength = 24;
+		public const int SizeOf = 4 + 4 + DirectoryEntry.NameLength;
+		public const int Padding = 2048;
+
 		public int Offset;
 		public int Size;
-		[MarshalAs(UnmanagedType.LPStr, SizeConst = 24)]
+
+		[MarshalAs(UnmanagedType.LPStr, SizeConst = DirectoryEntry.NameLength)]
 		public string Name;
 
 		public static DirectoryEntry Read(BinaryReader reader)
 		{
 			return new DirectoryEntry
 			{
-				Offset = reader.ReadInt32() * 2048,
-				Size = reader.ReadInt32() * 2048,
-				Name = reader.ReadString(24)
+				Offset = reader.ReadInt32(),
+				Size = reader.ReadInt32(),
+				Name = reader.ReadString(DirectoryEntry.NameLength).ToLower()
 			};
-		}
-		
-		public override string ToString()
-		{
-			return $"Offset: {this.Offset}, Size: {this.Size}, Name: {this.Name}";
 		}
 	}
 }

@@ -9,9 +9,13 @@ namespace RenderWare.Structures
 	public struct RpGeometry : IRwBinaryStream, System.IDisposable
 	{
 		public GeometryFlags Flags; // 0
+		
 		public int TriangleCount; // 1
 		public int VertexCount; // 2
+		
+		/// <summary>Always 1</summary>
 		public int MorphTargetCount; // 3
+
 		public float Ambient; // 4
 		public float Specular; // 5
 		public float Diffuse; // 6
@@ -45,7 +49,7 @@ namespace RenderWare.Structures
 		{
 			var geometry = new RpGeometry
 			{
-				Flags = reader.ReadEnum<GeometryFlags>(),
+				Flags = (GeometryFlags)reader.ReadInt(),
 				TriangleCount = reader.ReadInt(),
 				VertexCount = reader.ReadInt(),
 				MorphTargetCount = reader.ReadInt(),
@@ -55,63 +59,63 @@ namespace RenderWare.Structures
 				Diffuse = reader.ReadFloat()
 				// #endif
 			};
-
+			
 			if ((geometry.Flags & GeometryFlags.Native) == GeometryFlags.None)
 			{
 				if ((geometry.Flags & GeometryFlags.HasColors) == GeometryFlags.HasColors)
 				{
-					geometry.Colors = reader.ReadColor(geometry.VertexCount);
+					geometry.Colors = reader.Read<UnityEngine.Color32>(geometry.VertexCount, 4);
 				}
 
 				if ((geometry.Flags & GeometryFlags.HasTexCoords) == GeometryFlags.HasTexCoords)
 				{
-					geometry.TexCoords = reader.ReadVector2(geometry.VertexCount);
+					geometry.TexCoords = reader.Read<UnityEngine.Vector2>(geometry.VertexCount, 2 * 4);
 				}
 
-				geometry.Triangles = reader.Read(RpTriangle.Read, geometry.TriangleCount);
+				geometry.Triangles = reader.Read<RpTriangle>(geometry.TriangleCount, RpTriangle.SizeOf);
 			}
 
-			geometry.BoundingSphere = new UnityEngine.BoundingSphere(reader.ReadVector4());
+			geometry.BoundingSphere = reader.Read<UnityEngine.BoundingSphere>(4 * 4);
 
 			geometry.HasVertices = reader.ReadBoolean();
 			geometry.HasNormals = reader.ReadBoolean();
 
 			if (geometry.HasVertices)
 			{
-				geometry.Vertices = reader.ReadVector3(geometry.VertexCount);
+				geometry.Vertices = reader.Read<UnityEngine.Vector3>(geometry.VertexCount, 3 * 4);
 			}
 
 			if (geometry.HasNormals)
 			{
-				geometry.Normals = reader.ReadVector3(geometry.VertexCount);
+				geometry.Normals = reader.Read<UnityEngine.Vector3>(geometry.VertexCount, 3 * 4);
 			}
 
-			reader.ConsumeChunk((chunk) =>
+			foreach (var chunk in reader.ConsumeChunk())
 			{
 				switch (chunk.Type)
 				{
 					case SectionType.MaterialList:
-						geometry.MaterialList = reader.Read(chunk, RwMaterialList.Read);
+						geometry.MaterialList = RwMaterialList.Read(reader.ReadInnerChunk(chunk));
 						break;
 
 					case SectionType.Extension:
 					{
-						reader.ConsumeInnerChunk(chunk, (innerStream, extension) =>
+						var innerStream = reader.GetInnerStream(chunk.Size);
+
+						foreach (var innerChunk in innerStream.ConsumeChunk())
 						{
-							switch (extension.Type)
+							switch (innerChunk.Type)
 							{
 								case SectionType.BinMeshPlugin:
-								{
 									geometry.BinMesh = RwBinMesh.Read(innerStream);
 									break;
-								}
 							}
-						});
+						}
 
 						break;
 					}
 				}
-			});
+			}
 
 			geometry.CreateMesh();
 

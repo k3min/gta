@@ -19,8 +19,8 @@ namespace RenderWare.Structures
 		{
 			return new RwTexture
 			{
-				Filtering = reader.ReadEnum<FilterMode>(),
-				Wrap = reader.ReadEnum<AddressingMode>(),
+				Filtering = (FilterMode)reader.ReadByte(),
+				Wrap = (AddressingMode)reader.ReadByte(),
 				UseMipmaps = reader.ReadBoolean(1),
 				Padding = reader.ReadByte(),
 				Name = RwString.Read(reader),

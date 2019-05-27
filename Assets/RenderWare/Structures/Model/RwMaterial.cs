@@ -30,15 +30,15 @@ namespace RenderWare.Structures
 				Diffuse = reader.ReadFloat()
 			};
 
-			reader.ConsumeChunk((chunk) =>
+			foreach (var chunk in reader.ConsumeChunk())
 			{
 				switch (chunk.Type)
 				{
 					case SectionType.Texture:
-						material.Texture = reader.Read(chunk, RwTexture.Read);
+						material.Texture = RwTexture.Read(reader.ReadInnerChunk(chunk));
 						break;
 				}
-			});
+			}
 
 			return material;
 		}

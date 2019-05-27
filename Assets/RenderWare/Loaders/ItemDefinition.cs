@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using RenderWare.Extensions;
 using RenderWare.Structures;
 using RenderWare.Types;
 
@@ -7,12 +8,13 @@ namespace RenderWare.Loaders
 	public static class ItemDefinition
 	{
 		public const string Keyword = "IDE";
-
+		public const string End = "end";
+		
 		private static readonly Dictionary<int, IItemDefinition> objects = new Dictionary<int, IItemDefinition>();
 
-		public static void Add<T>(T info) where T : IItemDefinition
+		private static void Add<T>(T info) where T : IItemDefinition
 		{
-			ItemDefinition.objects.Add(info.Id, info);
+			ItemDefinition.objects.Add(info.ModelId, info);
 		}
 
 		public static T Get<T>(Instance inst) where T : IItemDefinition
@@ -58,7 +60,7 @@ namespace RenderWare.Loaders
 
 			AsciiReader.Read(filePath, (sr, line) =>
 			{
-				if (line == "end")
+				if (line.EqualsCaseIgnore(ItemDefinition.End))
 				{
 					section = IdeSection.None;
 				}
@@ -104,7 +106,7 @@ namespace RenderWare.Loaders
 								path.Nodes[i] = PathNode.Read(lr);
 							}
 
-							((IAttachableObject)ItemDefinition.objects[path.ObjectId]).Attach(path);
+							((IAttachableObject)ItemDefinition.objects[path.ModelId]).Attach(path);
 
 							break;
 						}

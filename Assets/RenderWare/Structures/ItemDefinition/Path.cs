@@ -13,7 +13,7 @@ namespace RenderWare.Structures
 		public const int NodeCount = 12;
 
 		private string groupType;
-		public int ObjectId;
+		public int ModelId;
 		public string ModelName;
 
 		[MarshalAs(UnmanagedType.ByValArray, SizeConst = Path.NodeCount)]
@@ -42,7 +42,7 @@ namespace RenderWare.Structures
 			return new Path
 			{
 				groupType = lr.ReadString(),
-				ObjectId = lr.ReadInt(),
+				ModelId = lr.ReadInt(),
 				ModelName = lr.ReadString(),
 				Nodes = new PathNode[Path.NodeCount]
 			};
@@ -51,14 +51,14 @@ namespace RenderWare.Structures
 		public void GetObjectData(SerializationInfo info, StreamingContext context)
 		{
 			info.AddValue("GroupType", this.groupType, typeof(string));
-			info.AddValue("ObjectId", this.ObjectId);
+			info.AddValue("ModelId", this.ModelId);
 			info.AddValue("ModelName", this.ModelName, typeof(string));
 		}
 
 		public Path(SerializationInfo info, StreamingContext context)
 		{
 			this.groupType = info.GetString("GroupType");
-			this.ObjectId = info.GetInt32("ObjectId");
+			this.ModelId = info.GetInt32("ModelId");
 			this.ModelName = info.GetString("ModelName");
 
 			this.Nodes = new PathNode[Path.NodeCount];
