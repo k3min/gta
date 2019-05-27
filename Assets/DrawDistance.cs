@@ -8,18 +8,18 @@ public class DrawDistance : MonoBehaviour
 	public float Min;
 	public float Max;
 
+	public MeshRenderer Renderer;
+
 	private Vector3 pos;
 	private Transform cam;
-	private bool active;
 	private string id;
-	private MeshRenderer meshRenderer;
 
 	private void Awake()
 	{
 		this.pos = this.transform.position;
 		this.cam = Camera.main.transform;
 		this.id = this.gameObject.name;
-		this.meshRenderer = this.GetComponentInChildren<MeshRenderer>();
+		this.Renderer = this.GetComponentInChildren<MeshRenderer>();
 	}
 
 	public static void FindParent(DrawDistance dd)
@@ -38,8 +38,6 @@ public class DrawDistance : MonoBehaviour
 			}
 
 			dd.Min = parent.Max;
-			dd.active = false;
-			parent.active = false;
 
 			return;
 		}
@@ -49,19 +47,6 @@ public class DrawDistance : MonoBehaviour
 	{
 		var distance = Vector3.Distance(this.cam.position, this.pos);
 
-		if (this.active)
-		{
-			if (distance <= this.Min || distance > this.Max)
-			{
-				this.meshRenderer.enabled = this.active = false;
-			}
-		}
-		else
-		{
-			if (distance > this.Min && distance <= this.Max)
-			{
-				this.meshRenderer.enabled = this.active = true;
-			}
-		}
+		this.Renderer.enabled = (distance > this.Min && distance <= this.Max);
 	}
 }

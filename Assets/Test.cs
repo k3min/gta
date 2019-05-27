@@ -14,6 +14,7 @@ public class Test : MonoBehaviour
 		"/Users/k3min/Applications/Wineskin/GTA III.app/Contents/Resources/drive_c/Program Files/GTA III";
 
 	private readonly List<GameObject> gameObjects = new List<GameObject>();
+	private readonly List<DrawDistance> lods = new List<DrawDistance>();
 	private readonly Dictionary<string, Material[][]> materials = new Dictionary<string, Material[][]>();
 	private Material material;
 
@@ -85,8 +86,6 @@ public class Test : MonoBehaviour
 			child.transform.localPosition = Vector3.zero;
 			child.transform.localRotation = Quaternion.identity;
 
-			this.gameObjects.Add(child);
-
 			if (Collision.TryFind(ide, out var coll))
 			{
 				if (coll.BoxCount != 0)
@@ -122,6 +121,7 @@ public class Test : MonoBehaviour
 
 			var meshRenderer = child.AddComponent<MeshRenderer>();
 
+			meshRenderer.enabled = false;
 			meshRenderer.motionVectorGenerationMode = MotionVectorGenerationMode.Camera;
 
 			var sharedMaterials = new Material[binMesh.MeshCount];
@@ -138,9 +138,17 @@ public class Test : MonoBehaviour
 
 			var drawDistance = go.AddComponent<DrawDistance>();
 
+			drawDistance.enabled = false;
 			drawDistance.Max = ide.DrawDistance;
 
+			this.lods.Add(drawDistance);
+			
 			DrawDistance.FindParent(drawDistance);
+		}
+
+		foreach (var lod in this.lods)
+		{
+			lod.enabled = true;
 		}
 	}
 
