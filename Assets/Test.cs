@@ -24,6 +24,7 @@ public class Test : MonoBehaviour
 	{
 #if UNITY_EDITOR
 		this.material = UnityEditor.AssetDatabase.GetBuiltinExtraResource<Material>("Default-Material.mat");
+		this.material.enableInstancing = true;
 #endif
 
 		FileSystem.BasePath = this.BasePath;
@@ -52,6 +53,7 @@ public class Test : MonoBehaviour
 
 			var go = new GameObject(inst.ModelName.ToLower())
 			{
+				isStatic = true,
 				hideFlags = HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild
 			};
 
@@ -68,7 +70,7 @@ public class Test : MonoBehaviour
 				continue;
 			}
 
-			var atomic = model.Atomics[model.AtomicCount-1];
+			var atomic = model.Atomics[model.AtomicCount - 1];
 
 			var frameList = model.FrameList;
 
@@ -78,6 +80,7 @@ public class Test : MonoBehaviour
 
 			var child = new GameObject(frameName)
 			{
+				isStatic = true,
 				hideFlags = HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild,
 			};
 
@@ -107,7 +110,7 @@ public class Test : MonoBehaviour
 						sphereCollider.center = sphere.Center.xzy();
 					}
 				}
-				
+
 				if (coll.Mesh != null)
 				{
 					var meshCollider = child.AddComponent<MeshCollider>();
@@ -142,7 +145,7 @@ public class Test : MonoBehaviour
 			drawDistance.Max = ide.DrawDistance;
 
 			this.lods.Add(drawDistance);
-			
+
 			DrawDistance.FindParent(drawDistance);
 		}
 

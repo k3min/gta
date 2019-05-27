@@ -13,6 +13,7 @@ public class DrawDistance : MonoBehaviour
 	private Vector3 pos;
 	private Transform cam;
 	private string id;
+	private bool isLod;
 
 	private void Awake()
 	{
@@ -20,11 +21,17 @@ public class DrawDistance : MonoBehaviour
 		this.cam = Camera.main.transform;
 		this.id = this.gameObject.name;
 		this.Renderer = this.GetComponentInChildren<MeshRenderer>();
+
+		if (this.id.StartsWith("lod"))
+		{
+			this.Min = 300;
+			this.isLod = true;
+		}
 	}
 
 	public static void FindParent(DrawDistance dd)
 	{
-		if (!dd.id.StartsWith("lod"))
+		if (!dd.isLod)
 		{
 			DrawDistance.parents.Add(dd);
 			return;
