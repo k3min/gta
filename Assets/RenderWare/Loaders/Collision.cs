@@ -53,18 +53,6 @@ namespace RenderWare.Loaders
 				{
 					return true;
 				}
-
-				foreach (var zone in zones.Values)
-				{
-					if (zone.ModelId != ide.ModelId)
-					{
-						continue;
-					}
-
-					coll = zone;
-
-					return true;
-				}
 			}
 
 			return false;

@@ -8,6 +8,7 @@ namespace RenderWare.Structures
 	[StructLayout(LayoutKind.Sequential)]
 	public struct CollisionModel : IRwBinaryStream, System.IDisposable
 	{
+		public const int ModelNameLength = 24;
 		public const string COLL = "COLL";
 
 		[MarshalAs(UnmanagedType.LPStr, SizeConst = 4)]
@@ -15,10 +16,8 @@ namespace RenderWare.Structures
 
 		public int Size; // 1
 
-		[MarshalAs(UnmanagedType.LPStr, SizeConst = 22)]
+		[MarshalAs(UnmanagedType.LPStr, SizeConst = CollisionModel.ModelNameLength)]
 		public string ModelName; // 2
-
-		public short ModelId;
 
 		public TBounds Bounds; // 4
 
@@ -49,7 +48,7 @@ namespace RenderWare.Structures
 		{
 			var magic = ar.ReadString(4);
 
-			if (!magic.EqualsCaseIgnore(CollisionModel.COLL))
+			if (!Helpers.EqualsCaseIgnore(magic,CollisionModel.COLL))
 			{
 				throw new InvalidDataException();
 			}
@@ -59,8 +58,7 @@ namespace RenderWare.Structures
 			{
 				Magic = CollisionModel.COLL,
 				Size = ar.ReadInt(),
-				ModelName = ar.ReadString(22),
-				ModelId=ar.ReadShort(),
+				ModelName = ar.ReadString(CollisionModel.ModelNameLength),
 				Bounds = ar.Read<TBounds>(TBounds.SizeOf)
 			};
 

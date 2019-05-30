@@ -60,7 +60,7 @@ namespace RenderWare.Loaders
 
 			AsciiReader.Read(filePath, (sr, line) =>
 			{
-				if (line.EqualsCaseIgnore(ItemDefinition.End))
+				if (Helpers.EqualsCaseIgnore(line,ItemDefinition.End))
 				{
 					section = IdeSection.None;
 				}

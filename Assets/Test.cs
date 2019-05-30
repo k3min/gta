@@ -6,6 +6,7 @@ using RenderWare.Loaders;
 using RenderWare.Structures;
 using RenderWare.Types;
 using UnityEngine;
+using UnityEngine.Rendering;
 using Collision = RenderWare.Loaders.Collision;
 
 public class Test : MonoBehaviour
@@ -13,8 +14,7 @@ public class Test : MonoBehaviour
 	public string BasePath =
 		"/Users/k3min/Applications/Wineskin/GTA III.app/Contents/Resources/drive_c/Program Files/GTA III";
 
-	private readonly List<GameObject> gameObjects = new List<GameObject>();
-	private readonly List<DrawDistance> lods = new List<DrawDistance>();
+	private readonly HashSet<GameObject> gameObjects = new HashSet<GameObject>();
 	private readonly Dictionary<string, Material[][]> materials = new Dictionary<string, Material[][]>();
 	private Material material;
 
@@ -50,7 +50,7 @@ public class Test : MonoBehaviour
 			{
 				continue;
 			}
-
+			
 			var go = new GameObject(inst.ModelName.ToLower())
 			{
 				isStatic = true,
@@ -124,9 +124,10 @@ public class Test : MonoBehaviour
 
 			var meshRenderer = child.AddComponent<MeshRenderer>();
 
-			meshRenderer.enabled = false;
 			meshRenderer.motionVectorGenerationMode = MotionVectorGenerationMode.Camera;
-
+			meshRenderer.hideFlags = HideFlags.HideInInspector;
+			meshRenderer.shadowCastingMode = ShadowCastingMode.TwoSided;
+			
 			var sharedMaterials = new Material[binMesh.MeshCount];
 
 			for (var j = 0; j < binMesh.MeshCount; j++)
@@ -141,17 +142,9 @@ public class Test : MonoBehaviour
 
 			var drawDistance = go.AddComponent<DrawDistance>();
 
-			drawDistance.enabled = false;
 			drawDistance.Max = ide.DrawDistance;
 
-			this.lods.Add(drawDistance);
-
 			DrawDistance.FindParent(drawDistance);
-		}
-
-		foreach (var lod in this.lods)
-		{
-			lod.enabled = true;
 		}
 	}
 

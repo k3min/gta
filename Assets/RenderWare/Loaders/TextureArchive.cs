@@ -52,7 +52,7 @@ namespace RenderWare.Loaders
 				{
 					result = texture.Textures[i];
 
-					if (result.Texture.Name.EqualsCaseIgnore(name))
+					if (Helpers.EqualsCaseIgnore(result.Texture.Name, name))
 					{
 						return true;
 					}

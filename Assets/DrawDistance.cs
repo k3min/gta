@@ -1,37 +1,44 @@
-using Boo.Lang;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class DrawDistance : MonoBehaviour
 {
-	private static readonly List<DrawDistance> parents = new List<DrawDistance>();
+	private static readonly HashSet<DrawDistance> parents = new HashSet<DrawDistance>();
 
+	private string id;
+	
 	public float Min;
 	public float Max;
-
-	public MeshRenderer Renderer;
-
-	private Vector3 pos;
-	private Transform cam;
-	private string id;
-	private bool isLod;
+	
+	public MeshRenderer Renderer { get; private set; }
+	public Vector3 Position { get; private set; }
+	public bool IsLod { get; private set; }
 
 	private void Awake()
 	{
-		this.pos = this.transform.position;
-		this.cam = Camera.main.transform;
+		this.Position = this.transform.position;
 		this.id = this.gameObject.name;
 		this.Renderer = this.GetComponentInChildren<MeshRenderer>();
 
 		if (this.id.StartsWith("lod"))
 		{
-			this.Min = 300;
-			this.isLod = true;
+			this.IsLod = true;
 		}
+	}
+
+	private void OnEnable()
+	{
+		DrawDistances.LODs.Add(this);
+	}
+
+	private void OnDisable()
+	{
+		DrawDistances.LODs.Remove(this);
 	}
 
 	public static void FindParent(DrawDistance dd)
 	{
-		if (!dd.isLod)
+		if (!dd.IsLod)
 		{
 			DrawDistance.parents.Add(dd);
 			return;
@@ -48,12 +55,5 @@ public class DrawDistance : MonoBehaviour
 
 			return;
 		}
-	}
-
-	private void Update()
-	{
-		var distance = Vector3.Distance(this.cam.position, this.pos);
-
-		this.Renderer.enabled = (distance > this.Min && distance <= this.Max);
 	}
 }

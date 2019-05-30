@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using RenderWare.Extensions;
 using RenderWare.Structures;
 using RenderWare.Types;
 
@@ -62,7 +60,7 @@ namespace RenderWare.Loaders
 
 			AsciiReader.Read(filePath, (sr, line) =>
 			{
-				if (line.EqualsCaseIgnore(ItemPlacement.End))
+				if (Helpers.EqualsCaseIgnore(line,ItemPlacement.End))
 				{
 					section = IplSection.None;
 				}

@@ -28,7 +28,7 @@ namespace RenderWare.Loaders
 
 				var magic = reader.ReadString(4);
 
-				if (!magic.EqualsCaseIgnore(TKey.Magic))
+				if (!Helpers.EqualsCaseIgnore(magic, TKey.Magic))
 				{
 					throw new InvalidDataException();
 				}

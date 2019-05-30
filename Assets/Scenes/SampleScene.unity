@@ -304,6 +304,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1754822490}
   - component: {fileID: 1754822491}
+  - component: {fileID: 1754822492}
   m_Layer: 0
   m_Name: Test
   m_TagString: Untagged
@@ -339,3 +340,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   BasePath: /Users/k3min/Applications/Wineskin/GTA III.app/Contents/Resources/drive_c/Program
     Files/GTA III
+--- !u!114 &1754822492
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1754822489}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e673a3dfa05a44e3ab6444821cf9adda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

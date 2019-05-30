@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using RenderWare.Extensions;
 using RenderWare.Structures;
 
 namespace RenderWare.Loaders
@@ -33,7 +32,7 @@ namespace RenderWare.Loaders
 			{
 				foreach (var entry in img.DirectoryEntries)
 				{
-					if (!entry.Name.EqualsCaseIgnore(name))
+					if (!Helpers.EqualsCaseIgnore(entry.Name, name))
 					{
 						continue;
 					}
