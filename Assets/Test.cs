@@ -43,6 +43,13 @@ public class Test : MonoBehaviour
 
 		//await this.ProcessMaterials();
 
+		var parent = new GameObject("GTA")
+		{
+			hideFlags = HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild
+		};
+
+		this.gameObjects.Add(parent);
+
 		foreach (var inst in ItemPlacement.All<Instance>())
 		{
 			var ide = ItemDefinition.Get<IAttachableObject>(inst);
@@ -58,6 +65,7 @@ public class Test : MonoBehaviour
 				hideFlags = HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild
 			};
 
+			go.transform.parent = parent.transform;
 			go.transform.localPosition = inst.Position.xzy();
 			go.transform.localRotation = inst.Rotation.xzyw();
 			go.transform.localScale = inst.Scale;
@@ -82,13 +90,15 @@ public class Test : MonoBehaviour
 			var child = new GameObject(frameName)
 			{
 				isStatic = true,
-				hideFlags = HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild,
+				hideFlags = HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild
 			};
 
 			child.transform.parent = go.transform;
 
 			child.transform.localPosition = Vector3.zero;
 			child.transform.localRotation = Quaternion.identity;
+
+			this.gameObjects.Add(child);
 
 			if (Collision.TryFind(ide.ModelName, out var coll))
 			{
