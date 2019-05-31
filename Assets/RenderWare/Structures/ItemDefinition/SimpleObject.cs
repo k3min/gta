@@ -24,7 +24,7 @@ namespace RenderWare.Structures
 
 		private ObjectFlags flags; // 5
 
-		private Dictionary<System.Type, List<IAttachment>> attachments;
+		private Dictionary<System.Type, HashSet<IAttachment>> attachments;
 
 		public int ModelId => this.modelId;
 		public string ModelName => this.modelName;
@@ -51,7 +51,7 @@ namespace RenderWare.Structures
 
 			info.flags = (ObjectFlags)lr.ReadInt();
 
-			info.attachments = new Dictionary<System.Type, List<IAttachment>>();
+			info.attachments = new Dictionary<System.Type, HashSet<IAttachment>>();
 
 			return info;
 		}
@@ -87,7 +87,7 @@ namespace RenderWare.Structures
 
 			this.flags = info.GetEnum<ObjectFlags>("Flags",typeof(int));
 			
-			this.attachments = new Dictionary<System.Type, List<IAttachment>>();
+			this.attachments = new Dictionary<System.Type, HashSet<IAttachment>>();
 		}
 
 		public void Attach<T>(T attachment) where T : IAttachment
@@ -96,7 +96,7 @@ namespace RenderWare.Structures
 
 			if (!this.attachments.ContainsKey(type))
 			{
-				this.attachments[type] = new List<IAttachment>();
+				this.attachments[type] = new HashSet<IAttachment>();
 			}
 
 			this.attachments[type].Add(attachment);

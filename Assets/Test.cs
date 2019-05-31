@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using RenderWare;
 using RenderWare.Extensions;
+using RenderWare.Helpers;
 using RenderWare.Loaders;
 using RenderWare.Structures;
 using RenderWare.Types;
@@ -29,13 +29,14 @@ public class Test : MonoBehaviour
 
 		FileSystem.BasePath = this.BasePath;
 
-		Archive.OnLoad += (img, x) => this.load = $"{img.FilePath}: {x}";
-		TextureArchive.OnLoad += (x) => this.load = x.ToLower();
-		Model.OnLoad += (x) => this.load = x.ToLower();
-		Collision.OnLoad += (x) => this.load = x.ToLower();
+		Text.OnLoad += (x) => this.load = x;
+		Archive.OnLoad += (x) => this.load = x;
+		TextureArchive.OnLoad += (x) => this.load = x;
+		Model.OnLoad += (x) => this.load = x;
+		Collision.OnLoad += (x) => this.load = x;
 
-		Text.Load("text/american.gxt");
-		Archive.Load("models/gta3.img");
+		await Text.Load("text/american.gxt");
+		await Archive.Load("models/gta3.img");
 
 		await MapListing.Load("data/default.dat");
 		await MapListing.Load("data/gta3.dat");
@@ -50,7 +51,7 @@ public class Test : MonoBehaviour
 			{
 				continue;
 			}
-			
+
 			var go = new GameObject(inst.ModelName.ToLower())
 			{
 				isStatic = true,
@@ -89,7 +90,7 @@ public class Test : MonoBehaviour
 			child.transform.localPosition = Vector3.zero;
 			child.transform.localRotation = Quaternion.identity;
 
-			if (Collision.TryFind(ide, out var coll))
+			if (Collision.TryFind(ide.ModelName, out var coll))
 			{
 				if (coll.BoxCount != 0)
 				{
@@ -127,7 +128,7 @@ public class Test : MonoBehaviour
 			meshRenderer.motionVectorGenerationMode = MotionVectorGenerationMode.Camera;
 			meshRenderer.hideFlags = HideFlags.HideInInspector;
 			meshRenderer.shadowCastingMode = ShadowCastingMode.TwoSided;
-			
+
 			var sharedMaterials = new Material[binMesh.MeshCount];
 
 			for (var j = 0; j < binMesh.MeshCount; j++)
@@ -149,7 +150,7 @@ public class Test : MonoBehaviour
 	}
 
 	/// <todo>Optimize this</todo>
-	private async Task ProcessMaterials()
+	/*private async Task ProcessMaterials()
 	{
 		await Model.ForEach(async (id, model) =>
 		{
@@ -191,8 +192,7 @@ public class Test : MonoBehaviour
 				}
 			}
 		});
-	}
-
+	}*/
 	private void OnDestroy()
 	{
 		foreach (var go in this.gameObjects)

@@ -24,7 +24,7 @@ namespace RenderWare.Structures
 				return false;
 			}
 
-			chunk = reader.Read<RwChunk>(RwChunk.SizeOf);
+			reader.Read(RwChunk.SizeOf, ref chunk);
 
 			return (position + chunk.Size <= reader.Size);
 		}

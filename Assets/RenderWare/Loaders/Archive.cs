@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using RenderWare.Structures;
 
@@ -8,48 +9,34 @@ namespace RenderWare.Loaders
 	{
 		public const string Keyword = "CDIMAGE";
 
-		private static readonly Dictionary<string, ImgArchive> archives = new Dictionary<string, ImgArchive>();
+		private static readonly HashSet<ImgArchive> archives = new HashSet<ImgArchive>();
 
-		public static event System.Action<ImgArchive, string> OnLoad;
+		public static event System.Action<string> OnLoad;
 
-		private static void Add(string name, ImgArchive img)
+		public static async Task Load(string filePath)
 		{
-			Archive.archives.Add(name.ToLower(), img);
-		}
-
-		public static ImgArchive Load(string filePath)
-		{
-			var img = new ImgArchive(filePath);
-
-			Archive.Add(filePath, img);
-
-			return img;
-		}
-
-		public static async Task<RwBinaryReader> TryFind(string name)
-		{
-			foreach (var img in Archive.archives.Values)
+			await Task.Run(() =>
 			{
-				foreach (var entry in img.DirectoryEntries)
+				if (Archive.OnLoad != null)
 				{
-					if (!Helpers.EqualsCaseIgnore(entry.Name, name))
-					{
-						continue;
-					}
+					Archive.OnLoad(filePath);
+				}
+			});
 
-					await Task.Run(() =>
-					{
-						if (Archive.OnLoad != null)
-						{
-							Archive.OnLoad(img, name);
-						}
-					});
+			Archive.archives.Add(new ImgArchive(filePath));
+		}
 
+		public static RwBinaryReader Find(string name)
+		{
+			foreach (var img in Archive.archives)
+			{
+				if (img.TryFind(name, out var entry))
+				{
 					return img.GetStream(entry);
 				}
 			}
 
-			return null;
+			throw new FileNotFoundException(name);
 		}
 	}
 }

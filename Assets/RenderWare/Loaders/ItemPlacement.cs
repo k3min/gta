@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using RenderWare.Structures;
 using RenderWare.Types;
+using RenderWare.Helpers;
 
 namespace RenderWare.Loaders
 {
@@ -9,19 +10,20 @@ namespace RenderWare.Loaders
 		public const string Keyword = "IPL";
 		public const string End = "end";
 
-		private static readonly Dictionary<System.Type, List<IItemPlacement>> items = new Dictionary<System.Type, List<IItemPlacement>>
-		{
-			{typeof(Instance), new List<IItemPlacement>()},
-			{typeof(Zone), new List<IItemPlacement>()},
-			{typeof(Cull), new List<IItemPlacement>()},
-			{typeof(Pickup), new List<IItemPlacement>()}
-		};
+		private static readonly Dictionary<System.Type, HashSet<IItemPlacement>> items =
+			new Dictionary<System.Type, HashSet<IItemPlacement>>
+			{
+				{typeof(Instance), new HashSet<IItemPlacement>()},
+				{typeof(Zone), new HashSet<IItemPlacement>()},
+				{typeof(Cull), new HashSet<IItemPlacement>()},
+				{typeof(Pickup), new HashSet<IItemPlacement>()}
+			};
 
 		private static void Add<T>(T instance) where T : IItemPlacement
 		{
 			ItemPlacement.items[typeof(T)].Add(instance);
 		}
-		
+
 		public static IEnumerable<T> All<T>() where T : IItemPlacement
 		{
 			var type = typeof(T);
@@ -33,9 +35,9 @@ namespace RenderWare.Loaders
 			}
 		}
 
-		private static IplSection GetSection(string line)
+		private static IplSection GetSection(string keyword)
 		{
-			switch (line.ToLower())
+			switch (keyword)
 			{
 				case Instance.Keyword:
 					return IplSection.Instances;
@@ -50,9 +52,10 @@ namespace RenderWare.Loaders
 					return IplSection.Pickups;
 
 				default:
-					throw new System.IndexOutOfRangeException();
+					throw new System.IndexOutOfRangeException(keyword);
 			}
 		}
+
 
 		public static void Load(string filePath)
 		{
@@ -60,7 +63,7 @@ namespace RenderWare.Loaders
 
 			AsciiReader.Read(filePath, (sr, line) =>
 			{
-				if (Helpers.EqualsCaseIgnore(line,ItemPlacement.End))
+				if (String.Equals(line, ItemPlacement.End))
 				{
 					section = IplSection.None;
 				}

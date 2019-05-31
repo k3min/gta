@@ -10,8 +10,7 @@ namespace RenderWare.Structures
 		public int Flags;
 		public UnityEngine.Color32 Color;
 		public int Unknown;
-		[MarshalAs(UnmanagedType.Bool)]
-		public bool IsTextured;
+		[MarshalAs(UnmanagedType.Bool)] public bool IsTextured;
 		public float Ambient;
 		public float Specular;
 		public float Diffuse;
@@ -22,13 +21,15 @@ namespace RenderWare.Structures
 			var material = new RwMaterial
 			{
 				Flags = reader.ReadInt(),
-				Color = reader.ReadColor(),
-				Unknown = reader.ReadInt(),
-				IsTextured = reader.ReadBoolean(),
-				Ambient = reader.ReadFloat(),
-				Specular = reader.ReadFloat(),
-				Diffuse = reader.ReadFloat()
 			};
+
+			reader.ReadColor(ref material.Color);
+
+			material.Unknown = reader.ReadInt();
+			material.IsTextured = reader.ReadBoolean();
+			material.Ambient = reader.ReadFloat();
+			material.Specular = reader.ReadFloat();
+			material.Diffuse = reader.ReadFloat();
 
 			foreach (var chunk in reader.ConsumeChunk())
 			{

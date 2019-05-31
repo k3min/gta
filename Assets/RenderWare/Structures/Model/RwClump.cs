@@ -11,6 +11,7 @@ namespace RenderWare.Structures
 		public RwGeometryList GeometryList; // 1
 
 		public int AtomicCount; // 2
+
 		[MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)]
 		public RwAtomic[] Atomics; // 3
 
@@ -41,17 +42,17 @@ namespace RenderWare.Structures
 					{
 						if (atomicIndex < clump.AtomicCount)
 						{
-							clump.Atomics[atomicIndex++] = reader.ReadInnerChunk(chunk).Read<RwAtomic>(RwAtomic.SizeOf);
+							reader.ReadInnerChunk(chunk).Read(RwAtomic.SizeOf, ref clump.Atomics[atomicIndex++]);
 						}
 
 						break;
 					}
 				}
 			}
-			
+
 			return clump;
 		}
-		
+
 		public void Dispose()
 		{
 			this.GeometryList.Dispose();

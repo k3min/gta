@@ -1,22 +1,32 @@
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using RenderWare.Extensions;
+using System.Threading.Tasks;
+using RenderWare.Helpers;
 using RenderWare.Structures;
 
 namespace RenderWare.Loaders
 {
 	public static class Text
 	{
-		private static readonly Dictionary<string, string> entries = new Dictionary<string, string>();
+		private static readonly StringDictionary<string> entries = new StringDictionary<string>();
+
+		public static event System.Action<string> OnLoad;
 
 		public static bool TryGet(string key, out string value)
 		{
-			return Text.entries.TryGetValue(key.ToLower(), out value);
+			return Text.entries.TryGetValue(key, out value);
 		}
 
-		public static void Load(string filePath)
+		public static async Task Load(string filePath)
 		{
+			await Task.Run(() =>
+			{
+				if (Text.OnLoad != null)
+				{
+					Text.OnLoad(filePath);
+				}
+			});
+
 			var sb = new StringBuilder();
 
 			var buffer = File.ReadAllBytes(FileSystem.GetPath(filePath));
@@ -28,7 +38,7 @@ namespace RenderWare.Loaders
 
 				var magic = reader.ReadString(4);
 
-				if (!Helpers.EqualsCaseIgnore(magic, TKey.Magic))
+				if (!String.Equals(magic, TKey.Magic))
 				{
 					throw new InvalidDataException();
 				}
@@ -50,7 +60,7 @@ namespace RenderWare.Loaders
 						sb.Append(@char);
 					}
 
-					Text.entries.Add(key.ToLower(), sb.ToString());
+					Text.entries.Add(key, sb.ToString());
 				}
 			}
 		}

@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using RenderWare.Extensions;
+using RenderWare.Helpers;
 using RenderWare.Structures;
 using RenderWare.Types;
 
@@ -9,7 +9,7 @@ namespace RenderWare.Loaders
 	{
 		public const string Keyword = "IDE";
 		public const string End = "end";
-		
+
 		private static readonly Dictionary<int, IItemDefinition> objects = new Dictionary<int, IItemDefinition>();
 
 		private static void Add<T>(T info) where T : IItemDefinition
@@ -22,10 +22,8 @@ namespace RenderWare.Loaders
 			return (T)ItemDefinition.objects[inst.ModelId];
 		}
 
-		private static IdeSection GetSection(string line)
+		private static IdeSection GetSection(string keyword)
 		{
-			var keyword = line.ToLower();
-
 			switch (keyword)
 			{
 				case SimpleObject.Keyword:
@@ -60,7 +58,7 @@ namespace RenderWare.Loaders
 
 			AsciiReader.Read(filePath, (sr, line) =>
 			{
-				if (Helpers.EqualsCaseIgnore(line,ItemDefinition.End))
+				if (String.Equals(line, ItemDefinition.End))
 				{
 					section = IdeSection.None;
 				}

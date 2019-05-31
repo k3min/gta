@@ -8,8 +8,10 @@ namespace RenderWare.Structures
 	public struct RwMaterialList : IRwBinaryStream
 	{
 		public int MaterialCount; // 0
+
 		[MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)]
 		public int[] Instances; // 1
+
 		[MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)]
 		public RwMaterial[] Materials; // 2
 
@@ -20,7 +22,8 @@ namespace RenderWare.Structures
 				MaterialCount = reader.ReadInt()
 			};
 
-			materialList.Instances = reader.Read<int>(materialList.MaterialCount, 4);
+			materialList.Instances = new int[materialList.MaterialCount];
+			reader.Read(materialList.MaterialCount, 4, ref materialList.Instances);
 
 			materialList.Materials = new RwMaterial[materialList.MaterialCount];
 

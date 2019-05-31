@@ -27,7 +27,7 @@ namespace RenderWare.Structures
 		public int TimeOn; // 6
 		public int TimeOff; // 7
 
-		private Dictionary<System.Type, List<IAttachment>> attachments;
+		private Dictionary<System.Type, HashSet<IAttachment>> attachments;
 
 		public int ModelId => this.modelId;
 		public string ModelName => this.modelName;
@@ -57,7 +57,7 @@ namespace RenderWare.Structures
 			info.TimeOn = lr.ReadInt();
 			info.TimeOff = lr.ReadInt();
 
-			info.attachments = new Dictionary<System.Type, List<IAttachment>>();
+			info.attachments = new Dictionary<System.Type, HashSet<IAttachment>>();
 
 			return info;
 		}
@@ -98,7 +98,7 @@ namespace RenderWare.Structures
 			this.TimeOn = info.GetInt32("TimeOn");
 			this.TimeOff = info.GetInt32("TimeOff");
 
-			this.attachments = new Dictionary<System.Type, List<IAttachment>>();
+			this.attachments = new Dictionary<System.Type, HashSet<IAttachment>>();
 		}
 
 		public void Attach<T>(T attachment) where T : IAttachment
@@ -107,7 +107,7 @@ namespace RenderWare.Structures
 
 			if (!this.attachments.ContainsKey(type))
 			{
-				this.attachments[type] = new List<IAttachment>();
+				this.attachments[type] = new HashSet<IAttachment>();
 			}
 
 			this.attachments[type].Add(attachment);

@@ -1,6 +1,7 @@
 using System.IO;
 using System.Runtime.InteropServices;
 using RenderWare.Extensions;
+using RenderWare.Loaders;
 
 namespace RenderWare.Structures
 {
@@ -17,13 +18,13 @@ namespace RenderWare.Structures
 		[MarshalAs(UnmanagedType.LPStr, SizeConst = DirectoryEntry.NameLength)]
 		public string Name;
 
-		public static DirectoryEntry Read(BinaryReader reader)
+		public static DirectoryEntry Read(RwBinaryReader reader)
 		{
 			return new DirectoryEntry
 			{
-				Offset = reader.ReadInt32(),
-				Size = reader.ReadInt32(),
-				Name = reader.ReadString(DirectoryEntry.NameLength).ToLower()
+				Offset = reader.ReadInt(),
+				Size = reader.ReadInt(),
+				Name = reader.ReadString(DirectoryEntry.NameLength)
 			};
 		}
 	}

@@ -20,7 +20,8 @@ namespace RenderWare.Structures
 				MaterialIndex = reader.ReadInt()
 			};
 
-			mesh.Indices = reader.Read<int>(mesh.IndexCount, 4);
+			mesh.Indices = new int[mesh.IndexCount];
+			reader.Read(mesh.IndexCount, 4, ref mesh.Indices);
 
 			return mesh;
 		}

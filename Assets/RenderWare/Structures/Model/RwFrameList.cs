@@ -21,7 +21,8 @@ namespace RenderWare.Structures
 				FrameCount = reader.ReadInt()
 			};
 
-			frameList.Frames = reader.Read<RwFrame>(frameList.FrameCount, RwFrame.SizeOf);
+			frameList.Frames = new RwFrame[frameList.FrameCount];
+			reader.Read(frameList.FrameCount, RwFrame.SizeOf, ref frameList.Frames);
 
 			frameList.FrameNames = new string[frameList.FrameCount];
 

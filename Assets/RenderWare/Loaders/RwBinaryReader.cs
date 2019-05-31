@@ -1,11 +1,12 @@
 using System.Collections.Generic;
 using System.IO;
+using RenderWare.Helpers;
 using RenderWare.Structures;
 using RenderWare.Types;
 
 namespace RenderWare.Loaders
 {
-	public class RwBinaryReader : IReader
+	public class RwBinaryReader
 	{
 		private readonly byte[] buffer;
 		private readonly int offset;
@@ -107,13 +108,13 @@ namespace RenderWare.Loaders
 
 			return *(float*)&@int;
 		}
-		
+
 		/// <todo>Refactor</todo>
 		public string ReadString(int count)
 		{
 			var @string = new char[count];
 			var end = false;
-			
+
 			for (var i = 0; i < count; i++)
 			{
 				var @char = (char)this.ReadByte();
@@ -128,10 +129,10 @@ namespace RenderWare.Loaders
 					end = true;
 					continue;
 				}
-				
+
 				@string[i] = @char;
 			}
-			
+
 			return (new string(@string)).TrimEnd((char)0);
 		}
 
@@ -146,7 +147,9 @@ namespace RenderWare.Loaders
 		public RwBinaryReader ReadInnerChunk(RwChunk chunk)
 		{
 			var innerStream = this.GetInnerStream(chunk.Size);
-			var innerChunk = innerStream.Read<RwChunk>(RwChunk.SizeOf);
+			var innerChunk = new RwChunk();
+
+			innerStream.Read(RwChunk.SizeOf, ref innerChunk);
 
 			if (innerChunk.Type != SectionType.Struct)
 			{
@@ -156,13 +159,11 @@ namespace RenderWare.Loaders
 			return innerStream;
 		}
 
-		public unsafe T[] Read<T>(int count, int size) where T : unmanaged
+		public unsafe void Read<T>(int count, int size, ref T[] result) where T : unmanaged
 		{
-			var result = new T[count];
-
 			if (count == 0)
 			{
-				return result;
+				return;
 			}
 
 			size *= count;
@@ -173,47 +174,41 @@ namespace RenderWare.Loaders
 			}
 
 			this.index += size;
-
-			return result;
 		}
 
-		public unsafe T Read<T>(int size) where T : unmanaged
+		public unsafe void Read<T>(int size, ref T result) where T : unmanaged
 		{
-			var result = new T();
-
-			fixed (void* src = &this.buffer[this.index])
+			fixed (void* src = &this.buffer[this.index], dst = &result)
 			{
-				System.Buffer.MemoryCopy(src, &result, size, size);
+				System.Buffer.MemoryCopy(src, dst, size, size);
 			}
 
 			this.index += size;
-
-			return result;
 		}
 
-		public UnityEngine.Vector2 ReadVector2()
+		public void ReadVector2(ref UnityEngine.Vector2 result)
 		{
-			return this.Read<UnityEngine.Vector2>(2 * 4);
+			this.Read(2 * 4, ref result);
 		}
 
-		public UnityEngine.Vector3 ReadVector3()
+		public void ReadVector3(ref UnityEngine.Vector3 result)
 		{
-			return this.Read<UnityEngine.Vector3>(3 * 4);
+			this.Read(3 * 4, ref result);
 		}
 
-		public UnityEngine.Vector4 ReadVector4()
+		public void ReadVector4(ref UnityEngine.Vector4 result)
 		{
-			return this.Read<UnityEngine.Vector4>(4 * 4);
+			this.Read(4 * 4, ref result);
 		}
 
-		public UnityEngine.Quaternion ReadQuaternion()
+		public void ReadQuaternion(ref UnityEngine.Quaternion result)
 		{
-			return this.Read<UnityEngine.Quaternion>(4 * 4);
+			this.Read(4 * 4, ref result);
 		}
 
-		public UnityEngine.Color32 ReadColor()
+		public void ReadColor(ref UnityEngine.Color32 result)
 		{
-			return this.Read<UnityEngine.Color32>(4);
+			this.Read(4, ref result);
 		}
 	}
 

@@ -1,9 +1,10 @@
 using System.IO;
 using System.Threading.Tasks;
+using RenderWare.Helpers;
 
 namespace RenderWare.Loaders
 {
-	public class AsciiReader : IReader
+	public class AsciiReader
 	{
 		private int index;
 		private readonly string[] tokens;
@@ -19,7 +20,7 @@ namespace RenderWare.Loaders
 		{
 			this.tokens = line.Split(delimiters, options);
 		}
-		
+
 		public static void Read(string filePath, System.Action<StreamReader, string> action)
 		{
 			using (var reader = new StreamReader(FileSystem.GetPath(filePath)))
@@ -39,7 +40,7 @@ namespace RenderWare.Loaders
 				}
 			}
 		}
-		
+
 		public static async Task Read(string filePath, System.Func<StreamReader, string, Task> action)
 		{
 			using (var reader = new StreamReader(FileSystem.GetPath(filePath)))

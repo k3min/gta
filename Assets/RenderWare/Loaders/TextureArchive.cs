@@ -1,9 +1,6 @@
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using RenderWare.Extensions;
+using RenderWare.Helpers;
 using RenderWare.Structures;
-using RenderWare.Types;
-using Path = System.IO.Path;
 
 namespace RenderWare.Loaders
 {
@@ -11,8 +8,8 @@ namespace RenderWare.Loaders
 	{
 		public const string Keyword = "TEXDICTION";
 
-		private static readonly Dictionary<string, RwTextureDictionary> textures =
-			new Dictionary<string, RwTextureDictionary>();
+		private static readonly StringDictionary<RwTextureDictionary> textures =
+			new StringDictionary<RwTextureDictionary>();
 
 		public static event System.Action<string> OnLoad;
 
@@ -31,19 +28,19 @@ namespace RenderWare.Loaders
 
 		private static RwTextureDictionary Add(string name, RwBinaryReader stream)
 		{
-			name = Path.GetFileNameWithoutExtension(name).ToLower();
+			var chunk = new RwChunk();
 
-			var txd = RwTextureDictionary.Read(stream.ReadInnerChunk(stream.Read<RwChunk>(RwChunk.SizeOf)));
-			
-			TextureArchive.textures.Add(name, txd);
+			stream.Read(RwChunk.SizeOf, ref chunk);
+
+			var txd = RwTextureDictionary.Read(stream.ReadInnerChunk(chunk));
+
+			TextureArchive.textures.Add(FileSystem.RemoveExtension(name), txd);
 
 			return txd;
 		}
 
 		public static bool TryFindTexture(string name, out RwTextureNative result)
 		{
-			name = name.ToLower();
-
 			result = default;
 
 			foreach (var texture in TextureArchive.textures.Values)
@@ -52,7 +49,7 @@ namespace RenderWare.Loaders
 				{
 					result = texture.Textures[i];
 
-					if (Helpers.EqualsCaseIgnore(result.Texture.Name, name))
+					if (String.Equals(result.Texture.Name, name))
 					{
 						return true;
 					}

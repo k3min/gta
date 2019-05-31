@@ -9,10 +9,10 @@ namespace RenderWare.Structures
 	public struct RpGeometry : IRwBinaryStream, System.IDisposable
 	{
 		public GeometryFlags Flags; // 0
-		
+
 		public int TriangleCount; // 1
 		public int VertexCount; // 2
-		
+
 		/// <summary>Always 1</summary>
 		public int MorphTargetCount; // 3
 
@@ -59,35 +59,40 @@ namespace RenderWare.Structures
 				Diffuse = reader.ReadFloat()
 				// #endif
 			};
-			
+
 			if ((geometry.Flags & GeometryFlags.Native) == GeometryFlags.None)
 			{
 				if ((geometry.Flags & GeometryFlags.HasColors) == GeometryFlags.HasColors)
 				{
-					geometry.Colors = reader.Read<UnityEngine.Color32>(geometry.VertexCount, 4);
+					geometry.Colors = new UnityEngine.Color32[geometry.VertexCount];
+					reader.Read(geometry.VertexCount, 4, ref geometry.Colors);
 				}
 
 				if ((geometry.Flags & GeometryFlags.HasTexCoords) == GeometryFlags.HasTexCoords)
 				{
-					geometry.TexCoords = reader.Read<UnityEngine.Vector2>(geometry.VertexCount, 2 * 4);
+					geometry.TexCoords = new UnityEngine.Vector2[geometry.VertexCount];
+					reader.Read(geometry.VertexCount, 2 * 4, ref geometry.TexCoords);
 				}
 
-				geometry.Triangles = reader.Read<RpTriangle>(geometry.TriangleCount, RpTriangle.SizeOf);
+				geometry.Triangles = new RpTriangle[geometry.TriangleCount];
+				reader.Read(geometry.TriangleCount, RpTriangle.SizeOf, ref geometry.Triangles);
 			}
 
-			geometry.BoundingSphere = reader.Read<UnityEngine.BoundingSphere>(4 * 4);
+			reader.Read(4 * 4, ref geometry.BoundingSphere);
 
 			geometry.HasVertices = reader.ReadBoolean();
 			geometry.HasNormals = reader.ReadBoolean();
 
 			if (geometry.HasVertices)
 			{
-				geometry.Vertices = reader.Read<UnityEngine.Vector3>(geometry.VertexCount, 3 * 4);
+				geometry.Vertices = new UnityEngine.Vector3[geometry.VertexCount];
+				reader.Read(geometry.VertexCount, 3 * 4, ref geometry.Vertices);
 			}
 
 			if (geometry.HasNormals)
 			{
-				geometry.Normals = reader.Read<UnityEngine.Vector3>(geometry.VertexCount, 3 * 4);
+				geometry.Normals = new UnityEngine.Vector3[geometry.VertexCount];
+				reader.Read(geometry.VertexCount, 3 * 4, ref geometry.Normals);
 			}
 
 			foreach (var chunk in reader.ConsumeChunk())

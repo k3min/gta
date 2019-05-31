@@ -1,8 +1,6 @@
-using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
+using RenderWare.Helpers;
 using RenderWare.Structures;
-using Path = System.IO.Path;
 
 namespace RenderWare.Loaders
 {
@@ -10,61 +8,48 @@ namespace RenderWare.Loaders
 	{
 		public const string Keyword = "MODELFILE";
 
-		private static readonly Dictionary<string, RwClump> models = new Dictionary<string, RwClump>();
+		private static readonly StringDictionary<RwClump> models = new StringDictionary<RwClump>();
 
 		public static event System.Action<string> OnLoad;
 
-		public static async Task ForEach(System.Func<string, RwClump, Task> action)
+		private static async Task<RwClump> Read(string name, RwBinaryReader stream)
 		{
-			foreach (var model in Model.models)
+			await Task.Run(() =>
 			{
-				await action(model.Key, model.Value);
-			}
-		}
+				if (Model.OnLoad != null)
+				{
+					Model.OnLoad(name);
+				}
+			});
 
-		private static RwClump Read(string name, RwBinaryReader stream)
-		{
-			name = Path.GetFileNameWithoutExtension(name).ToLower();
+			var chunk = new RwChunk();
 
-			var dff = RwClump.Read(stream.ReadInnerChunk(stream.Read<RwChunk>(RwChunk.SizeOf)));
-			
-			Model.models.Add(name, dff);
+			stream.Read(RwChunk.SizeOf, ref chunk);
+
+			var dff = RwClump.Read(stream.ReadInnerChunk(chunk));
+
+			Model.models.Add(FileSystem.RemoveExtension(name), dff);
 
 			return dff;
 		}
 
 		public static async Task<RwClump> Load(string filePath)
 		{
-			await Task.Run(() =>
-			{
-				if (Model.OnLoad != null)
-				{
-					Model.OnLoad(filePath);
-				}
-			});
-
-			return Model.Read(filePath, RwBinaryReader.Load(filePath));
+			return await Model.Read(filePath, RwBinaryReader.Load(filePath));
 		}
 
 		public static async Task<RwClump> Find(string name)
 		{
-			name = Path.GetFileNameWithoutExtension(name).ToLower();
+			name = FileSystem.RemoveExtension(name);
 
 			if (Model.models.TryGetValue(name, out var result))
 			{
 				return result;
 			}
 
-			name = Path.ChangeExtension(name, "dff");
+			name += ".dff";
 
-			var stream = await Archive.TryFind(name);
-
-			if (stream == null)
-			{
-				throw new FileNotFoundException(name);
-			}
-
-			return Model.Read(name, stream);
+			return await Model.Read(name, Archive.Find(name));
 		}
 	}
 }

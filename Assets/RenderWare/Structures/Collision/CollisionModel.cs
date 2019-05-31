@@ -1,6 +1,7 @@
 using System.IO;
 using System.Runtime.InteropServices;
 using RenderWare.Extensions;
+using RenderWare.Helpers;
 using RenderWare.Loaders;
 
 namespace RenderWare.Structures
@@ -48,7 +49,7 @@ namespace RenderWare.Structures
 		{
 			var magic = ar.ReadString(4);
 
-			if (!Helpers.EqualsCaseIgnore(magic,CollisionModel.COLL))
+			if (!String.Equals(magic, CollisionModel.COLL))
 			{
 				throw new InvalidDataException();
 			}
@@ -59,22 +60,27 @@ namespace RenderWare.Structures
 				Magic = CollisionModel.COLL,
 				Size = ar.ReadInt(),
 				ModelName = ar.ReadString(CollisionModel.ModelNameLength),
-				Bounds = ar.Read<TBounds>(TBounds.SizeOf)
 			};
 
+			ar.Read(TBounds.SizeOf, ref coll.Bounds);
+
 			coll.SphereCount = ar.ReadInt();
-			coll.Spheres = ar.Read<TSphere>(coll.SphereCount, TSphere.SizeOf);
+			coll.Spheres = new TSphere[coll.SphereCount];
+			ar.Read(coll.SphereCount, TSphere.SizeOf, ref coll.Spheres);
 
 			coll.Unknown = ar.ReadInt();
 
 			coll.BoxCount = ar.ReadInt();
-			coll.Boxes = ar.Read<TBox>(coll.BoxCount, TBox.SizeOf);
+			coll.Boxes = new TBox[coll.BoxCount];
+			ar.Read(coll.BoxCount, TBox.SizeOf, ref coll.Boxes);
 
 			coll.VertexCount = ar.ReadInt();
-			coll.Vertices = ar.Read<UnityEngine.Vector3>(coll.VertexCount, 3 * 4);
+			coll.Vertices = new UnityEngine.Vector3[coll.VertexCount];
+			ar.Read(coll.VertexCount, 3 * 4, ref coll.Vertices);
 
 			coll.FaceCount = ar.ReadInt();
-			coll.Faces = ar.Read<TFace>(coll.FaceCount, TFace.SizeOf);
+			coll.Faces = new TFace[coll.FaceCount];
+			ar.Read(coll.FaceCount, TFace.SizeOf, ref coll.Faces);
 
 			if (coll.VertexCount != 0)
 			{
@@ -92,7 +98,7 @@ namespace RenderWare.Structures
 			{
 				vertices[i] = this.Vertices[i].xzy();
 			}
-			
+
 			this.Mesh = new UnityEngine.Mesh
 			{
 				hideFlags = UnityEngine.HideFlags.DontSaveInEditor | UnityEngine.HideFlags.DontSaveInBuild,
@@ -111,7 +117,7 @@ namespace RenderWare.Structures
 					}
 				}
 			}
-			
+
 			this.Mesh.SetIndices(indices, UnityEngine.MeshTopology.Triangles, 0, true);
 			this.Mesh.UploadMeshData(true);
 		}

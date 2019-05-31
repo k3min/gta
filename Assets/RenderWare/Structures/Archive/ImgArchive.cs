@@ -1,67 +1,58 @@
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using RenderWare.Helpers;
 using RenderWare.Loaders;
 
 namespace RenderWare.Structures
 {
 	public class ImgArchive
 	{
-		private readonly DirectoryEntry[] dirFileEntries;
-		private readonly byte[] imgFileBuffer;
+		private readonly int directoryEntryCount;
+		private readonly DirectoryEntry[] directoryEntries;
 
-		public readonly int FileCount;
-		public readonly string FilePath;
-
-		public IEnumerable<DirectoryEntry> DirectoryEntries
-		{
-			get
-			{
-				for (var i = 0; i < this.FileCount; i++)
-				{
-					var entry = this.dirFileEntries[i];
-
-					if (entry.Size == 0)
-					{
-						continue;
-					}
-
-					yield return entry;
-				}
-			}
-		}
+		private readonly byte[] buffer;
 
 		public ImgArchive(string filePath)
 		{
-			this.FilePath = filePath.ToLower();
+			var dirFilePath = FileSystem.ChangeExtension(filePath, "dir");
+			var imgFilePath = FileSystem.ChangeExtension(filePath, "img");
 
-			filePath = FileSystem.GetPath(filePath);
+			var reader = RwBinaryReader.Load(dirFilePath);
 
-			var dirFilePath = System.IO.Path.ChangeExtension(filePath, "dir");
-			var imgFilePath = System.IO.Path.ChangeExtension(filePath, "img");
+			this.directoryEntryCount = reader.Size / DirectoryEntry.SizeOf;
+			this.directoryEntries = new DirectoryEntry[this.directoryEntryCount];
 
-			using (var fs = File.OpenRead(dirFilePath))
-			using (var br = new BinaryReader(fs, Encoding.ASCII))
+			for (var i = 0; i < this.directoryEntryCount; i++)
 			{
-				this.FileCount = (int)fs.Length / DirectoryEntry.SizeOf;
-				this.dirFileEntries = new DirectoryEntry[this.FileCount];
-
-				for (var index = 0; index < this.FileCount; index++)
-				{
-					this.dirFileEntries[index] = DirectoryEntry.Read(br);
-				}
+				this.directoryEntries[i] = DirectoryEntry.Read(reader);
 			}
 
-			this.imgFileBuffer = File.ReadAllBytes(imgFilePath);
+			this.buffer = File.ReadAllBytes(FileSystem.GetPath(imgFilePath));
 		}
 
 		public RwBinaryReader GetStream(DirectoryEntry entry)
 		{
 			return new RwBinaryReader(
-				this.imgFileBuffer,
+				this.buffer,
 				entry.Offset * DirectoryEntry.Padding,
 				entry.Size * DirectoryEntry.Padding
 			);
+		}
+
+		public bool TryFind(string name, out DirectoryEntry entry)
+		{
+			entry = default;
+
+			for (var i = 0; i < this.directoryEntryCount; i++)
+			{
+				entry = this.directoryEntries[i];
+
+				if (String.Equals(entry.Name, name))
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 	}
 }

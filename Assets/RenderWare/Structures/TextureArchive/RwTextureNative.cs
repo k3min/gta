@@ -31,7 +31,8 @@ namespace RenderWare.Structures
 
 			if (pal8)
 			{
-				texture.Palette = reader.Read<UnityEngine.Color32>(256,4);
+				texture.Palette = new UnityEngine.Color32[256];
+				reader.Read(256, 4, ref texture.Palette);
 
 				var size = reader.ReadInt();
 				texture.Pixels = new UnityEngine.Color32[size];
