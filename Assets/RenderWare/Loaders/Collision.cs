@@ -11,7 +11,7 @@ namespace RenderWare.Loaders
 		public const string Keyword = "COLFILE";
 
 		private static readonly Dictionary<int, HashSet<CollisionModel>> collisions =
-			new Dictionary<int, HashSet<CollisionModel>>(new IntComparer())
+			new Dictionary<int, HashSet<CollisionModel>>
 			{
 				{(int)ZoneType.None, new HashSet<CollisionModel>()}, // World
 				{(int)ZoneType.Portland, new HashSet<CollisionModel>()}, // Portland

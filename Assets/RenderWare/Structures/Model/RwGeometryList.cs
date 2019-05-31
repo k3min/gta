@@ -23,7 +23,7 @@ namespace RenderWare.Structures
 
 			var geometryIndex = 0;
 
-			foreach (var chunk in reader.ConsumeChunk())
+			while (reader.TryReadChunk(out var chunk))
 			{
 				switch (chunk.Type)
 				{
@@ -31,7 +31,8 @@ namespace RenderWare.Structures
 					{
 						if (geometryIndex < geometryList.GeometryCount)
 						{
-							geometryList.Geometries[geometryIndex++] = RpGeometry.Read(reader.ReadInnerChunk(chunk));
+							geometryList.Geometries[geometryIndex++] =
+								RpGeometry.Read(reader.ReadInnerChunk(chunk.Size));
 						}
 
 						break;

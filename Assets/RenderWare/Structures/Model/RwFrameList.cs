@@ -28,7 +28,7 @@ namespace RenderWare.Structures
 
 			var frameIndex = 0;
 
-			foreach (var chunk in reader.ConsumeChunk())
+			while (reader.TryReadChunk(out var chunk))
 			{
 				switch (chunk.Type)
 				{
@@ -36,7 +36,7 @@ namespace RenderWare.Structures
 					{
 						var innerStream = reader.GetInnerStream(chunk.Size);
 
-						foreach (var innerChunk in innerStream.ConsumeChunk())
+						while (innerStream.TryReadChunk(out var innerChunk))
 						{
 							switch (innerChunk.Type)
 							{

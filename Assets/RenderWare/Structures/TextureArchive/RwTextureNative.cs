@@ -24,8 +24,9 @@ namespace RenderWare.Structures
 			var texture = new RwTextureNative
 			{
 				Texture = RwTextureNative.TextureFormat.Read(reader),
-				Raster = RwTextureNative.RasterFormat.Read(reader)
 			};
+
+			reader.Read(RwTextureNative.RasterFormat.SizeOf, ref texture.Raster);
 
 			var pal8 = ((texture.Raster.Flags & Types.RasterFormat.Pal8) == Types.RasterFormat.Pal8);
 
@@ -43,11 +44,12 @@ namespace RenderWare.Structures
 			}
 			else
 			{
+				var offset = 0;
 				var size = reader.ReadInt();
 
-				texture.Data = new byte[size];
+				texture.Data = new byte[size + (size / 3)];
 
-				reader.BlockCopy(texture.Data, 0, size);
+				reader.Read(size, 1, ref texture.Data, offset);
 
 				for (var i = 1; i < texture.Raster.MipMapCount; i++)
 				{
@@ -58,9 +60,9 @@ namespace RenderWare.Structures
 						continue;
 					}
 
-					System.Array.Resize(ref texture.Data, texture.Data.Length + size);
+					reader.Read(size, 1, ref texture.Data, offset);
 
-					reader.BlockCopy(texture.Data, texture.Data.Length - size, size);
+					offset += size;
 				}
 			}
 
@@ -159,6 +161,9 @@ namespace RenderWare.Structures
 		[StructLayout(LayoutKind.Sequential)]
 		public struct TextureFormat
 		{
+			public const int NameLength = 32;
+			public const int SizeOf = 4 + 1 + 1 + 2 + TextureFormat.NameLength + TextureFormat.NameLength;
+
 			public PlatformId PlatformId;
 			public FilterMode FilterMode;
 			public AddressingMode Wrap;
@@ -187,8 +192,9 @@ namespace RenderWare.Structures
 		[StructLayout(LayoutKind.Sequential)]
 		public struct RasterFormat
 		{
-			public Types.RasterFormat Flags;
+			public const int SizeOf = 4 + 4 + 2 + 2 + 1 + 1 + 1 + 1;
 
+			public Types.RasterFormat Flags;
 			[MarshalAs(UnmanagedType.Bool)] public bool HasAlpha;
 			public short Width;
 			public short Height;
@@ -196,21 +202,6 @@ namespace RenderWare.Structures
 			public byte MipMapCount;
 			public byte RasterType;
 			public byte Compression;
-
-			public static RasterFormat Read(RwBinaryReader reader)
-			{
-				return new RasterFormat
-				{
-					Flags = (Types.RasterFormat)reader.ReadInt(),
-					HasAlpha = reader.ReadBoolean(),
-					Width = reader.ReadShort(),
-					Height = reader.ReadShort(),
-					BitsPerPixel = reader.ReadByte(),
-					MipMapCount = reader.ReadByte(),
-					RasterType = reader.ReadByte(),
-					Compression = reader.ReadByte()
-				};
-			}
 		}
 	}
 }

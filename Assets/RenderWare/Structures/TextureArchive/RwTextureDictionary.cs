@@ -9,6 +9,7 @@ namespace RenderWare.Structures
 	{
 		public short TextureCount; // 0
 		public short Device; // 1
+
 		[MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)]
 		public RwTextureNative[] Textures; // 2
 
@@ -24,7 +25,7 @@ namespace RenderWare.Structures
 
 			var textureIndex = 0;
 
-			foreach (var chunk in reader.ConsumeChunk())
+			while (reader.TryReadChunk(out var chunk))
 			{
 				switch (chunk.Type)
 				{
@@ -32,7 +33,8 @@ namespace RenderWare.Structures
 					{
 						if (textureIndex < textureDictionary.TextureCount)
 						{
-							textureDictionary.Textures[textureIndex++] = RwTextureNative.Read(reader.ReadInnerChunk(chunk));
+							textureDictionary.Textures[textureIndex++] =
+								RwTextureNative.Read(reader.ReadInnerChunk(chunk.Size));
 						}
 
 						break;

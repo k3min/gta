@@ -20,10 +20,10 @@ namespace RenderWare.Structures
 		{
 			var material = new RwMaterial
 			{
-				Flags = reader.ReadInt(),
+				Flags = reader.ReadInt()
 			};
 
-			reader.ReadColor(ref material.Color);
+			reader.Read(4, ref material.Color);
 
 			material.Unknown = reader.ReadInt();
 			material.IsTextured = reader.ReadBoolean();
@@ -31,12 +31,12 @@ namespace RenderWare.Structures
 			material.Specular = reader.ReadFloat();
 			material.Diffuse = reader.ReadFloat();
 
-			foreach (var chunk in reader.ConsumeChunk())
+			while (reader.TryReadChunk(out var chunk))
 			{
 				switch (chunk.Type)
 				{
 					case SectionType.Texture:
-						material.Texture = RwTexture.Read(reader.ReadInnerChunk(chunk));
+						material.Texture = RwTexture.Read(reader.ReadInnerChunk(chunk.Size));
 						break;
 				}
 			}

@@ -1,5 +1,4 @@
 using System.Runtime.InteropServices;
-using RenderWare.Loaders;
 using RenderWare.Types;
 
 namespace RenderWare.Structures
@@ -12,22 +11,6 @@ namespace RenderWare.Structures
 		public SectionType Type;
 		public int Size;
 		public int Version;
-
-		public static bool TryRead(RwBinaryReader reader, out RwChunk chunk)
-		{
-			chunk = default;
-
-			var position = reader.Position;
-
-			if (position + RwChunk.SizeOf > reader.Size)
-			{
-				return false;
-			}
-
-			reader.Read(RwChunk.SizeOf, ref chunk);
-
-			return (position + chunk.Size <= reader.Size);
-		}
 
 		public override string ToString()
 		{

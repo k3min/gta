@@ -35,7 +35,7 @@ namespace RenderWare.Structures
 
 		public static implicit operator string(RwString @string)
 		{
-			return @string.ToString();
+			return @string.Value;
 		}
 	}
 }

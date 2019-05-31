@@ -95,19 +95,19 @@ namespace RenderWare.Structures
 				reader.Read(geometry.VertexCount, 3 * 4, ref geometry.Normals);
 			}
 
-			foreach (var chunk in reader.ConsumeChunk())
+			while (reader.TryReadChunk(out var chunk))
 			{
 				switch (chunk.Type)
 				{
 					case SectionType.MaterialList:
-						geometry.MaterialList = RwMaterialList.Read(reader.ReadInnerChunk(chunk));
+						geometry.MaterialList = RwMaterialList.Read(reader.ReadInnerChunk(chunk.Size));
 						break;
 
 					case SectionType.Extension:
 					{
 						var innerStream = reader.GetInnerStream(chunk.Size);
 
-						foreach (var innerChunk in innerStream.ConsumeChunk())
+						while (innerStream.TryReadChunk(out var innerChunk))
 						{
 							switch (innerChunk.Type)
 							{

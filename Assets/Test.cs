@@ -5,25 +5,25 @@ using RenderWare.Helpers;
 using RenderWare.Loaders;
 using RenderWare.Structures;
 using RenderWare.Types;
-using UnityEngine;
-using UnityEngine.Rendering;
-using Collision = RenderWare.Loaders.Collision;
 
-public class Test : MonoBehaviour
+public class Test : UnityEngine.MonoBehaviour
 {
 	public string BasePath =
 		"/Users/k3min/Applications/Wineskin/GTA III.app/Contents/Resources/drive_c/Program Files/GTA III";
 
-	private readonly HashSet<GameObject> gameObjects = new HashSet<GameObject>();
-	private readonly Dictionary<string, Material[][]> materials = new Dictionary<string, Material[][]>();
-	private Material material;
+	private readonly HashSet<UnityEngine.GameObject> gameObjects = new HashSet<UnityEngine.GameObject>();
+
+	private readonly StringDictionary<UnityEngine.Material[][]> materials =
+		new StringDictionary<UnityEngine.Material[][]>();
+
+	private UnityEngine.Material material;
 
 	private string load;
 
 	private async void Start()
 	{
 #if UNITY_EDITOR
-		this.material = UnityEditor.AssetDatabase.GetBuiltinExtraResource<Material>("Default-Material.mat");
+		this.material = UnityEditor.AssetDatabase.GetBuiltinExtraResource<UnityEngine.Material>("Default-Material.mat");
 		this.material.enableInstancing = true;
 #endif
 
@@ -43,9 +43,9 @@ public class Test : MonoBehaviour
 
 		//await this.ProcessMaterials();
 
-		var parent = new GameObject("GTA")
+		var parent = new UnityEngine.GameObject("GTA")
 		{
-			hideFlags = HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild
+			hideFlags = UnityEngine.HideFlags.DontSaveInEditor | UnityEngine.HideFlags.DontSaveInBuild
 		};
 
 		this.gameObjects.Add(parent);
@@ -59,16 +59,15 @@ public class Test : MonoBehaviour
 				continue;
 			}
 
-			var go = new GameObject(inst.ModelName.ToLower())
+			var go = new UnityEngine.GameObject(inst.ModelName.ToLower())
 			{
 				isStatic = true,
-				hideFlags = HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild
+				hideFlags = UnityEngine.HideFlags.DontSaveInEditor | UnityEngine.HideFlags.DontSaveInBuild
 			};
 
 			go.transform.parent = parent.transform;
 			go.transform.localPosition = inst.Position.xzy();
 			go.transform.localRotation = inst.Rotation.xzyw();
-			go.transform.localScale = inst.Scale;
 
 			this.gameObjects.Add(go);
 
@@ -87,16 +86,16 @@ public class Test : MonoBehaviour
 			var geometry = model.GeometryList.Geometries[atomic.GeometryIndex];
 			var binMesh = geometry.BinMesh;
 
-			var child = new GameObject(frameName)
+			var child = new UnityEngine.GameObject(frameName)
 			{
 				isStatic = true,
-				hideFlags = HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild
+				hideFlags = UnityEngine.HideFlags.DontSaveInEditor | UnityEngine.HideFlags.DontSaveInBuild
 			};
 
 			child.transform.parent = go.transform;
 
-			child.transform.localPosition = Vector3.zero;
-			child.transform.localRotation = Quaternion.identity;
+			child.transform.localPosition = UnityEngine.Vector3.zero;
+			child.transform.localRotation = UnityEngine.Quaternion.identity;
 
 			this.gameObjects.Add(child);
 
@@ -106,9 +105,9 @@ public class Test : MonoBehaviour
 				{
 					foreach (var box in coll.Boxes)
 					{
-						var boxCollider = child.AddComponent<BoxCollider>();
-						boxCollider.center = box.Center;
-						boxCollider.size = box.Size;
+						var boxCollider = child.AddComponent<UnityEngine.BoxCollider>();
+						boxCollider.center = box.Center.xzy();
+						boxCollider.size = box.Size.xzy();
 					}
 				}
 
@@ -116,7 +115,7 @@ public class Test : MonoBehaviour
 				{
 					foreach (var sphere in coll.Spheres)
 					{
-						var sphereCollider = child.AddComponent<SphereCollider>();
+						var sphereCollider = child.AddComponent<UnityEngine.SphereCollider>();
 						sphereCollider.radius = sphere.Radius;
 						sphereCollider.center = sphere.Center.xzy();
 					}
@@ -124,29 +123,29 @@ public class Test : MonoBehaviour
 
 				if (coll.Mesh != null)
 				{
-					var meshCollider = child.AddComponent<MeshCollider>();
+					var meshCollider = child.AddComponent<UnityEngine.MeshCollider>();
 					meshCollider.sharedMesh = coll.Mesh;
 				}
 			}
 
-			var meshFilter = child.AddComponent<MeshFilter>();
+			var meshFilter = child.AddComponent<UnityEngine.MeshFilter>();
 
 			meshFilter.sharedMesh = geometry.Mesh;
 
-			var meshRenderer = child.AddComponent<MeshRenderer>();
+			var meshRenderer = child.AddComponent<UnityEngine.MeshRenderer>();
 
-			meshRenderer.motionVectorGenerationMode = MotionVectorGenerationMode.Camera;
-			meshRenderer.hideFlags = HideFlags.HideInInspector;
-			meshRenderer.shadowCastingMode = ShadowCastingMode.TwoSided;
+			meshRenderer.motionVectorGenerationMode = UnityEngine.MotionVectorGenerationMode.Camera;
+			meshRenderer.hideFlags = UnityEngine.HideFlags.HideInInspector;
+			meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.TwoSided;
 
-			var sharedMaterials = new Material[binMesh.MeshCount];
+			var sharedMaterials = new UnityEngine.Material[binMesh.MeshCount];
 
 			for (var j = 0; j < binMesh.MeshCount; j++)
 			{
 				var index = binMesh.Meshes[j].MaterialIndex;
 
 				sharedMaterials[index] = this.material;
-				//sharedMaterials[index] = this.materials[ide.ModelName.ToLower()][atomic.GeometryIndex][index];
+				//sharedMaterials[index] = this.materials[ide.ModelName][atomic.GeometryIndex][index];
 			}
 
 			meshRenderer.sharedMaterials = sharedMaterials;
@@ -160,7 +159,7 @@ public class Test : MonoBehaviour
 	}
 
 	/// <todo>Optimize this</todo>
-	/*private async Task ProcessMaterials()
+	private async Task ProcessMaterials()
 	{
 		await Model.ForEach(async (id, model) =>
 		{
@@ -169,7 +168,7 @@ public class Test : MonoBehaviour
 			var texture = default(RwTextureNative);
 			var geometryList = model.GeometryList;
 
-			this.materials[id] = new Material[geometryList.GeometryCount][];
+			this.materials[id] = new UnityEngine.Material[geometryList.GeometryCount][];
 
 			for (var i = 0; i < geometryList.GeometryCount; i++)
 			{
@@ -177,7 +176,7 @@ public class Test : MonoBehaviour
 				var materialList = geometry.MaterialList;
 				var binMesh = geometry.BinMesh;
 
-				this.materials[id][i] = new Material[binMesh.MeshCount];
+				this.materials[id][i] = new UnityEngine.Material[binMesh.MeshCount];
 
 				for (var j = 0; j < binMesh.MeshCount; j++)
 				{
@@ -186,28 +185,27 @@ public class Test : MonoBehaviour
 
 					var shaderName = "RW/Opaque";
 
-					if (material.IsTextured &&
-					    TextureArchive.TryFindTexture(material.Texture.Name, out texture) &&
-					    texture.Raster.HasAlpha)
+					if (material.IsTextured)
 					{
 						shaderName = "RW/Alpha";
 					}
 
-					this.materials[id][i][materialIndex] = new Material(Shader.Find(shaderName))
+					this.materials[id][i][materialIndex] = new UnityEngine.Material(UnityEngine.Shader.Find(shaderName))
 					{
-						hideFlags = HideFlags.DontSaveInBuild | HideFlags.DontSaveInEditor,
+						hideFlags = UnityEngine.HideFlags.DontSaveInBuild | UnityEngine.HideFlags.DontSaveInEditor,
 						color = material.Color,
 						mainTexture = texture.Texture2D
 					};
 				}
 			}
 		});
-	}*/
+	}
+
 	private void OnDestroy()
 	{
 		foreach (var go in this.gameObjects)
 		{
-			Object.DestroyImmediate(go);
+			UnityEngine.Object.DestroyImmediate(go);
 		}
 	}
 
@@ -215,15 +213,15 @@ public class Test : MonoBehaviour
 	{
 		if (this.load != null)
 		{
-			GUI.Label(new Rect(10, 10, 600, 20), this.load);
+			UnityEngine.GUI.Label(new UnityEngine.Rect(10, 10, 600, 20), this.load);
 		}
 	}
 
 	private void OnDrawGizmos()
 	{
-		var color = Gizmos.color;
+		var color = UnityEngine.Gizmos.color;
 
-		Gizmos.color = new Color(1f, 0.5f, 0.5f, 0.5f);
+		UnityEngine.Gizmos.color = new UnityEngine.Color(1f, 0.5f, 0.5f, 0.5f);
 		foreach (var zone in ItemPlacement.All<Zone>())
 		{
 			var min = zone.Min.xzy();
@@ -232,7 +230,7 @@ public class Test : MonoBehaviour
 			var extents = (max - min) * 0.5f;
 			var center = min + extents;
 
-			Gizmos.DrawWireCube(center, extents * 2f);
+			UnityEngine.Gizmos.DrawWireCube(center, extents * 2f);
 
 #if UNITY_EDITOR
 			if (Text.TryGet(zone.Name, out var zoneName))
@@ -242,7 +240,7 @@ public class Test : MonoBehaviour
 #endif
 		}
 
-		Gizmos.color = new Color(0.5f, 1f, 0.5f, 0.5f);
+		UnityEngine.Gizmos.color = new UnityEngine.Color(0.5f, 1f, 0.5f, 0.5f);
 		foreach (var cull in ItemPlacement.All<Cull>())
 		{
 			var min = cull.Min.xzy();
@@ -251,10 +249,10 @@ public class Test : MonoBehaviour
 			var extents = (max - min) * 0.5f;
 			var center = min + extents;
 
-			Gizmos.DrawSphere(center, 1f);
-			Gizmos.DrawWireCube(center, extents * 2f);
+			UnityEngine.Gizmos.DrawSphere(center, 1f);
+			UnityEngine.Gizmos.DrawWireCube(center, extents * 2f);
 		}
 
-		Gizmos.color = color;
+		UnityEngine.Gizmos.color = color;
 	}
 }

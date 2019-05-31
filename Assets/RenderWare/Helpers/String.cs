@@ -4,18 +4,24 @@ namespace RenderWare.Helpers
 	{
 		public static bool Equals(string a, string b)
 		{
-			var length = a.Length;
+			var la = a.Length;
+			var lb = b.Length;
 
-			if (length != b.Length)
-			{
-				return false;
-			}
+			var l = (la < lb) ? la : lb;
 
-			for (var i = 0; i < length; i++)
+			for (var i = 0; i < l; i++)
 			{
-				if ((a[i] | 32) != (b[i] | 32))
+				var ca = a[i] | 32;
+				var cb = b[i] | 32;
+
+				if (ca != cb)
 				{
 					return false;
+				}
+
+				if (ca == (char)0)
+				{
+					return true;
 				}
 			}
 

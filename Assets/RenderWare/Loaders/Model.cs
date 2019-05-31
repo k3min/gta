@@ -26,7 +26,7 @@ namespace RenderWare.Loaders
 
 			stream.Read(RwChunk.SizeOf, ref chunk);
 
-			var dff = RwClump.Read(stream.ReadInnerChunk(chunk));
+			var dff = RwClump.Read(stream.ReadInnerChunk(chunk.Size));
 
 			Model.models.Add(FileSystem.RemoveExtension(name), dff);
 
@@ -50,6 +50,14 @@ namespace RenderWare.Loaders
 			name += ".dff";
 
 			return await Model.Read(name, Archive.Find(name));
+		}
+
+		public static async Task ForEach(System.Func<string, RwClump, Task> action)
+		{
+			foreach (var model in Model.models)
+			{
+				await action(model.Key, model.Value);
+			}
 		}
 	}
 }

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.IO;
 using RenderWare.Helpers;
 using RenderWare.Structures;
@@ -14,8 +13,6 @@ namespace RenderWare.Loaders
 		private int index;
 
 		public readonly int Size;
-
-		public int Depth { get; private set; }
 
 		public int Position => (this.index - this.offset);
 
@@ -33,10 +30,7 @@ namespace RenderWare.Loaders
 
 		public RwBinaryReader GetInnerStream(int count)
 		{
-			var inner = new RwBinaryReader(this.buffer, this.index, count)
-			{
-				Depth = (this.Depth + 1)
-			};
+			var inner = new RwBinaryReader(this.buffer, this.index, count);
 
 			this.index += count;
 
@@ -51,13 +45,6 @@ namespace RenderWare.Loaders
 		public byte ReadByte()
 		{
 			return this.buffer[this.index++];
-		}
-
-		public void BlockCopy(byte[] dst, int dstOffset, int count)
-		{
-			System.Buffer.BlockCopy(this.buffer, this.index, dst, dstOffset, count);
-
-			this.index += count;
 		}
 
 		public unsafe short ReadShort()
@@ -88,12 +75,7 @@ namespace RenderWare.Loaders
 			return @int;
 		}
 
-		public bool ReadBoolean()
-		{
-			return this.ReadBoolean(4);
-		}
-
-		public bool ReadBoolean(int size)
+		public bool ReadBoolean(int size = 4)
 		{
 			var @bool = (this.buffer[this.index] != 0);
 
@@ -133,20 +115,28 @@ namespace RenderWare.Loaders
 				@string[i] = @char;
 			}
 
-			return (new string(@string)).TrimEnd((char)0);
+			return new string(@string);
 		}
 
-		public IEnumerable<RwChunk> ConsumeChunk()
+		public bool TryReadChunk(out RwChunk chunk)
 		{
-			while (RwChunk.TryRead(this, out var chunk))
+			chunk = default;
+
+			var position = this.Position;
+
+			if (position + RwChunk.SizeOf > this.Size)
 			{
-				yield return chunk;
+				return false;
 			}
+
+			this.Read(RwChunk.SizeOf, ref chunk);
+
+			return (position + chunk.Size <= this.Size);
 		}
 
-		public RwBinaryReader ReadInnerChunk(RwChunk chunk)
+		public RwBinaryReader ReadInnerChunk(int size)
 		{
-			var innerStream = this.GetInnerStream(chunk.Size);
+			var innerStream = this.GetInnerStream(size);
 			var innerChunk = new RwChunk();
 
 			innerStream.Read(RwChunk.SizeOf, ref innerChunk);
@@ -159,7 +149,7 @@ namespace RenderWare.Loaders
 			return innerStream;
 		}
 
-		public unsafe void Read<T>(int count, int size, ref T[] result) where T : unmanaged
+		public unsafe void Read<T>(int count, int size, ref T[] result, int dstOffset = 0) where T : unmanaged
 		{
 			if (count == 0)
 			{
@@ -168,7 +158,7 @@ namespace RenderWare.Loaders
 
 			size *= count;
 
-			fixed (void* src = &this.buffer[this.index], dst = &result[0])
+			fixed (void* src = &this.buffer[this.index], dst = &result[dstOffset])
 			{
 				System.Buffer.MemoryCopy(src, dst, size, size);
 			}
@@ -184,39 +174,6 @@ namespace RenderWare.Loaders
 			}
 
 			this.index += size;
-		}
-
-		public void ReadVector2(ref UnityEngine.Vector2 result)
-		{
-			this.Read(2 * 4, ref result);
-		}
-
-		public void ReadVector3(ref UnityEngine.Vector3 result)
-		{
-			this.Read(3 * 4, ref result);
-		}
-
-		public void ReadVector4(ref UnityEngine.Vector4 result)
-		{
-			this.Read(4 * 4, ref result);
-		}
-
-		public void ReadQuaternion(ref UnityEngine.Quaternion result)
-		{
-			this.Read(4 * 4, ref result);
-		}
-
-		public void ReadColor(ref UnityEngine.Color32 result)
-		{
-			this.Read(4, ref result);
-		}
-	}
-
-	public class EndOfRwBinaryStreamException : EndOfStreamException
-	{
-		public EndOfRwBinaryStreamException(string type = "stream") : base(
-			$"Attempted to read past the end of the {type}.")
-		{
 		}
 	}
 }

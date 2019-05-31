@@ -13,7 +13,7 @@ namespace RenderWare.Structures
 		public byte Padding;
 
 		public RwString Name;
-		public RwString AlphaName;
+		public RwString MaskName;
 
 		public static RwTexture Read(RwBinaryReader reader)
 		{
@@ -24,7 +24,7 @@ namespace RenderWare.Structures
 				UseMipmaps = reader.ReadBoolean(1),
 				Padding = reader.ReadByte(),
 				Name = RwString.Read(reader),
-				AlphaName = RwString.Read(reader)
+				MaskName = RwString.Read(reader)
 			};
 		}
 	}

@@ -13,50 +13,30 @@ namespace RenderWare.Loaders
 
 		public static event System.Action<string> OnLoad;
 
-		public static async Task<RwTextureDictionary> Load(string filePath)
+		private static async Task<RwTextureDictionary> Read(string name, RwBinaryReader stream)
 		{
 			await Task.Run(() =>
 			{
 				if (TextureArchive.OnLoad != null)
 				{
-					TextureArchive.OnLoad(filePath);
+					TextureArchive.OnLoad(name);
 				}
 			});
 
-			return TextureArchive.Add(filePath, RwBinaryReader.Load(filePath));
-		}
-
-		private static RwTextureDictionary Add(string name, RwBinaryReader stream)
-		{
 			var chunk = new RwChunk();
 
 			stream.Read(RwChunk.SizeOf, ref chunk);
 
-			var txd = RwTextureDictionary.Read(stream.ReadInnerChunk(chunk));
+			var txd = RwTextureDictionary.Read(stream.ReadInnerChunk(chunk.Size));
 
 			TextureArchive.textures.Add(FileSystem.RemoveExtension(name), txd);
 
 			return txd;
 		}
 
-		public static bool TryFindTexture(string name, out RwTextureNative result)
+		public static async Task<RwTextureDictionary> Load(string filePath)
 		{
-			result = default;
-
-			foreach (var texture in TextureArchive.textures.Values)
-			{
-				for (var i = 0; i < texture.TextureCount; i++)
-				{
-					result = texture.Textures[i];
-
-					if (String.Equals(result.Texture.Name, name))
-					{
-						return true;
-					}
-				}
-			}
-
-			return false;
+			return await TextureArchive.Read(filePath, RwBinaryReader.Load(filePath));
 		}
 	}
 }

@@ -29,7 +29,7 @@ namespace RenderWare.Structures
 
 			var materialIndex = 0;
 
-			foreach (var chunk in reader.ConsumeChunk())
+			while (reader.TryReadChunk(out var chunk))
 			{
 				switch (chunk.Type)
 				{
@@ -37,7 +37,8 @@ namespace RenderWare.Structures
 					{
 						if (materialIndex < materialList.MaterialCount)
 						{
-							materialList.Materials[materialIndex++] = RwMaterial.Read(reader.ReadInnerChunk(chunk));
+							materialList.Materials[materialIndex++] =
+								RwMaterial.Read(reader.ReadInnerChunk(chunk.Size));
 						}
 
 						break;
